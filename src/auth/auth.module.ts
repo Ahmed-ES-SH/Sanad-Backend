@@ -1,0 +1,47 @@
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { AuthService } from './auth.service';
+import { UserModule } from 'src/user/user.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/user/schema/user.schema';
+import { AuthController } from './auth.controller';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { MailModule } from 'src/mail/mail.module';
+
+// JWT Options
+function ReturnJWTOptions(config: ConfigService) {
+  return {
+    secret: config.get<string>('JWT_SECRET'),
+    signOptions: {
+      expiresIn: config.get<number>('JWT_EXPIRES_IN'),
+    },
+  };
+}
+
+const JWT_OPTIONS = {
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => {
+    return ReturnJWTOptions(config);
+  },
+};
+
+// module
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    JwtModule.registerAsync(JWT_OPTIONS),
+    MailModule,
+    ConfigModule,
+    UserModule,
+    PassportModule,
+  ],
+  controllers: [AuthController],
+  providers: [AuthService, GoogleStrategy, JwtStrategy],
+  exports: [AuthService],
+})
+export class AuthModule {}
