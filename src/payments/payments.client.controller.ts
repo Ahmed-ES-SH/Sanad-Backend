@@ -14,6 +14,7 @@ import {
 } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
+import { CreatePaymentIntentResponseDto } from './dto/create-payment-intent-response.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 
 @ApiTags('Payments')
@@ -29,6 +30,7 @@ export class PaymentsClientController {
   @ApiResponse({
     status: 201,
     description: 'Payment intent created successfully',
+    type: CreatePaymentIntentResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -40,11 +42,7 @@ export class PaymentsClientController {
   })
   async createPaymentIntent(
     @Body() dto: CreatePaymentIntentDto,
-  ): Promise<{
-    clientSecret: string;
-    paymentId: string;
-    stripePaymentIntentId: string;
-  }> {
+  ): Promise<CreatePaymentIntentResponseDto> {
     return this.paymentsService.createPaymentIntent(dto);
   }
 }

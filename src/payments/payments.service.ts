@@ -8,20 +8,29 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import Stripe from 'stripe';
+import { ConfigService } from '@nestjs/config';
 import { Payment } from './schema/payment.schema';
 import { PaymentStatus } from './enums/payment-status.enum';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
 import { PaymentFilterDto } from './dto/payment-filter.dto';
+import { PaymentResponseDto } from './dto/payment-response.dto';
+import { RefundResponseDto } from './dto/refund-response.dto';
 
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
+  private readonly webhookSecret: string;
 
   constructor(
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
     private readonly stripe: Stripe,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.webhookSecret = this.configService.getOrThrow<string>(
+      'STRIPE_WEBHOOK_SECRET',
+    );
+  }
 
   private toCents(dollars: number): number {
     return Math.round(dollars * 100);
@@ -48,10 +57,10 @@ export class PaymentsService {
           idempotencyKey: `create_intent:${Date.now()}:${Math.random().toString(36).substring(7)}`,
         },
       );
-    } catch (error) {
-      this.logger.error(
-        `Stripe PaymentIntent creation failed: ${(error as Error).message}`,
-      );
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown error occurred';
+      this.logger.error(`Stripe PaymentIntent creation failed: ${message}`);
       throw new BadGatewayException(
         'Payment gateway temporarily unavailable. Please try again.',
       );
@@ -81,12 +90,12 @@ export class PaymentsService {
       return this.stripe.webhooks.constructEvent(
         payload,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET as string,
+        this.webhookSecret,
       );
-    } catch (error) {
-      this.logger.warn(
-        `Stripe webhook verification failed: ${(error as Error).message}`,
-      );
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown error occurred';
+      this.logger.warn(`Stripe webhook verification failed: ${message}`);
       throw new BadRequestException('Invalid Stripe webhook signature');
     }
   }
@@ -218,6 +227,22 @@ export class PaymentsService {
     this.logger.log(`Payment ${payment.id} updated to REFUNDED via webhook`);
   }
 
+  private toResponseDto(payment: Payment): PaymentResponseDto {
+    return {
+      id: payment.id,
+      userId: payment.userId,
+      stripePaymentIntentId: payment.stripePaymentIntentId,
+      stripeCustomerId: payment.stripeCustomerId,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: payment.status,
+      description: payment.description,
+      metadata: payment.metadata,
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt,
+    };
+  }
+
   private async findOneOrFail(id: string): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({ where: { id } });
     if (!payment) {
@@ -227,7 +252,7 @@ export class PaymentsService {
   }
 
   async findAll(query: PaymentFilterDto): Promise<{
-    data: Payment[];
+    data: PaymentResponseDto[];
     meta: { page: number; limit: number; total: number; totalPages: number };
   }> {
     const {
@@ -263,7 +288,7 @@ export class PaymentsService {
     });
 
     return {
-      data,
+      data: data.map((p) => this.toResponseDto(p)),
       meta: {
         page,
         limit,
@@ -273,13 +298,12 @@ export class PaymentsService {
     };
   }
 
-  async findOne(id: string): Promise<Payment> {
-    return this.findOneOrFail(id);
+  async findOne(id: string): Promise<PaymentResponseDto> {
+    const payment = await this.findOneOrFail(id);
+    return this.toResponseDto(payment);
   }
 
-  async refund(
-    id: string,
-  ): Promise<{ id: string; status: string; message: string }> {
+  async refund(id: string): Promise<RefundResponseDto> {
     const payment = await this.findOneOrFail(id);
 
     if (payment.status !== PaymentStatus.SUCCEEDED) {
@@ -295,9 +319,11 @@ export class PaymentsService {
           idempotencyKey: `refund:${payment.id}:${Date.now()}`,
         },
       );
-    } catch (error) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown error occurred';
       this.logger.error(
-        `Stripe refund failed for payment ${payment.id}: ${(error as Error).message}`,
+        `Stripe refund failed for payment ${payment.id}: ${message}`,
       );
       throw new BadGatewayException(
         'Refund failed at payment gateway. Payment status unchanged.',

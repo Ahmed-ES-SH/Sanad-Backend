@@ -1,61 +1,54 @@
+import { Repository, Not, ObjectLiteral, FindOptionsWhere } from 'typeorm';
+
+export function generateSlug(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^\u0600-\u06FFa-z0-9\s-]/g, '') // include Arabic
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
 /**
- * Generates a unique slug by checking against the database using the provided repository.
- * If a slug already exists, it appends a counter (e.g., "my-slug-1").
- */
-export async function generateUniqueSlug(
-  title: string,
-  repository: { findOne: (options: any) => Promise<any> },
-): Promise<string> {
-  const baseSlug = generateSlug(title);
-  let slug = baseSlug;
-  let counter = 1;
-
-  while (await repository.findOne({ where: { slug } })) {
-    slug = `${baseSlug}-${counter}`;
-    counter++;
-  }
-
-  return slug;
-import { Repository, Not, ObjectLiteral } from 'typeorm';
-
-
-
-/**
- * Generate a unique slug by checking existence in the repository
+ * Generate a unique slug by checking existence in DB
  * and appending incremental suffixes if needed.
  */
 export async function generateUniqueSlug<T extends ObjectLiteral>(
   title: string,
   repository: Repository<T>,
-  slugColumn: string = 'slug',
-  excludeId?: string,
+  options?: {
+    slugColumn?: keyof T;
+    idColumn?: keyof T;
+    excludeId?: string | number;
+  },
 ): Promise<string> {
+  const slugColumn = (options?.slugColumn ?? 'slug') as keyof T;
+  const idColumn = (options?.idColumn ?? 'id') as keyof T;
+  const excludeId = options?.excludeId;
+
   const baseSlug = generateSlug(title);
 
-  const whereBase: Record<string, unknown> = { [slugColumn]: baseSlug };
-  if (excludeId) {
-    whereBase.id = Not(excludeId);
-  }
-  const existing = await repository.findOne({ where: whereBase as any });
+  let slug = baseSlug;
+  let counter = 1;
 
-  if (!existing) {
-    return baseSlug;
-  }
-
-  // Append incremental suffix
-  let suffix = 1;
   while (true) {
-    const candidate = `${baseSlug}-${suffix}`;
-    const whereClause: Record<string, unknown> = { [slugColumn]: candidate };
-    if (excludeId) {
-      whereClause.id = Not(excludeId);
+    const where: FindOptionsWhere<T> = {
+      [slugColumn]: slug,
+    } as FindOptionsWhere<T>;
+
+    if (excludeId !== undefined) {
+      Object.assign(where, {
+        [idColumn]: Not(excludeId),
+      });
     }
 
-    const exists = await repository.findOne({ where: whereClause as any });
+    const exists = await repository.findOne({ where });
+
     if (!exists) {
-      return candidate;
+      return slug;
     }
-    suffix++;
+
+    slug = `${baseSlug}-${counter++}`;
   }
 }

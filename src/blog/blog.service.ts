@@ -32,7 +32,7 @@ export class BlogService {
   }
 
   private findOneOrFail(id: string): Promise<Article> {
-    const article = this.articleRepo.findOne({ where: { id } as any });
+    const article = this.articleRepo.findOne({ where: { id } });
     return article.then((result) => {
       if (!result) {
         throw new NotFoundException(`Article with ID "${id}" not found`);
@@ -42,11 +42,7 @@ export class BlogService {
   }
 
   async create(dto: CreateArticleDto): Promise<Article> {
-    const slug = await generateUniqueSlug(
-      dto.title,
-      this.articleRepo,
-      'slug',
-    );
+    const slug = await generateUniqueSlug(dto.title, this.articleRepo);
     const readTimeMinutes = this.calculateReadTime(dto.content);
 
     const article = this.articleRepo.create({
@@ -69,12 +65,9 @@ export class BlogService {
     const article = await this.findOneOrFail(id);
 
     if (dto.title && dto.title !== article.title) {
-      article.slug = await generateUniqueSlug(
-        dto.title,
-        this.articleRepo,
-        'slug',
-        id,
-      );
+      article.slug = await generateUniqueSlug(dto.title, this.articleRepo, {
+        excludeId: id,
+      });
       article.title = dto.title;
     }
 
@@ -84,7 +77,8 @@ export class BlogService {
     }
 
     if (dto.excerpt !== undefined) article.excerpt = dto.excerpt;
-    if (dto.coverImageUrl !== undefined) article.coverImageUrl = dto.coverImageUrl;
+    if (dto.coverImageUrl !== undefined)
+      article.coverImageUrl = dto.coverImageUrl;
     if (dto.tags !== undefined) article.tags = dto.tags;
 
     return this.articleRepo.save(article);
@@ -173,7 +167,9 @@ export class BlogService {
       .take(limit);
 
     if (filters.tag) {
-      qb.andWhere(':tag = ANY(article.tags)', { tag: filters.tag.toLowerCase() });
+      qb.andWhere(':tag = ANY(article.tags)', {
+        tag: filters.tag.toLowerCase(),
+      });
     }
 
     const [data, total] = await qb.getManyAndCount();
@@ -197,7 +193,9 @@ export class BlogService {
     });
 
     if (!article) {
-      throw new NotFoundException(`Published article with slug "${slug}" not found`);
+      throw new NotFoundException(
+        `Published article with slug "${slug}" not found`,
+      );
     }
 
     await this.articleRepo.increment({ id: article.id }, 'viewsCount', 1);

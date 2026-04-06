@@ -46,6 +46,6 @@ const JWT_OPTIONS = {
   ],
   controllers: [AuthController, AuthPublicController],
   providers: [AuthService, GoogleStrategy, JwtStrategy, AuthGuard],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

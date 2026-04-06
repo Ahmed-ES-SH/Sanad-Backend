@@ -6,21 +6,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { UserRoleEnum } from '../types/UserRoleEnum';
+import { UserType } from '../types/userType';
 
 interface RequestWithUser extends Request {
-  user?: { id: string; email: string; role: string };
+  user?: UserType;
 }
-
-@Injectable()
-export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
-
-  canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>('roles', [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-import { UserRoleEnum } from '../types/UserRoleEnum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -40,24 +31,14 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('User not found in request');
-    }
-
-    const hasRole = requiredRoles.includes(user.role);
-    if (!hasRole) {
-      throw new ForbiddenException(
-        `Access denied: requires role [${requiredRoles.join(', ')}]`,
-      );
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
-
-    if (!user) {
       throw new ForbiddenException('Access denied: no user context');
     }
 
     const hasRole = requiredRoles.some((role) => user.role === role);
     if (!hasRole) {
-      throw new ForbiddenException('Access denied: insufficient role');
+      throw new ForbiddenException(
+        `Access denied: requires role [${requiredRoles.join(', ')}]`,
+      );
     }
 
     return true;

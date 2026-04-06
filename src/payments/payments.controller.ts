@@ -16,7 +16,8 @@ import {
 } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { PaymentFilterDto } from './dto/payment-filter.dto';
-import { Payment } from './schema/payment.schema';
+import { PaymentResponseDto } from './dto/payment-response.dto';
+import { RefundResponseDto } from './dto/refund-response.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/Roles.decorator';
@@ -35,9 +36,11 @@ export class PaymentsController {
   @ApiResponse({
     status: 200,
     description: 'Paginated list of payments',
+    type: PaymentResponseDto,
+    isArray: true,
   })
   async findAll(@Query() query: PaymentFilterDto): Promise<{
-    data: Payment[];
+    data: PaymentResponseDto[];
     meta: { page: number; limit: number; total: number; totalPages: number };
   }> {
     return this.paymentsService.findAll(query);
@@ -49,12 +52,15 @@ export class PaymentsController {
   @ApiResponse({
     status: 200,
     description: 'Payment details',
+    type: PaymentResponseDto,
   })
   @ApiResponse({
     status: 404,
     description: 'Payment not found',
   })
-  async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Payment> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<PaymentResponseDto> {
     return this.paymentsService.findOne(id);
   }
 
@@ -64,6 +70,7 @@ export class PaymentsController {
   @ApiResponse({
     status: 200,
     description: 'Payment refunded successfully',
+    type: RefundResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -75,7 +82,7 @@ export class PaymentsController {
   })
   async refund(
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<{ id: string; status: string; message: string }> {
+  ): Promise<RefundResponseDto> {
     return this.paymentsService.refund(id);
   }
 }

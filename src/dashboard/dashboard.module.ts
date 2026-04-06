@@ -9,6 +9,8 @@ import { ArticleEntity } from './entities/article.entity';
 import { ContactMessageEntity } from './entities/contact-message.entity';
 import { PaymentEntity } from './entities/payment.entity';
 import { User } from '../user/schema/user.schema';
+import { AuthModule } from 'src/auth/auth.module';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 @Module({
   imports: [
@@ -20,8 +22,9 @@ import { User } from '../user/schema/user.schema';
       PaymentEntity,
       User,
     ]),
+    AuthModule,
   ],
   controllers: [DashboardController],
-  providers: [DashboardService],
+  providers: [DashboardService, AuthGuard],
 })
 export class DashboardModule {}
