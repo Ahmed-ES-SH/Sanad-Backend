@@ -19,11 +19,11 @@
 
 **Purpose**: Create the module skeleton and database table
 
-- [ ] T001 Create blog module directory structure: `src/blog/`, `src/blog/schema/`, `src/blog/dto/`
-- [ ] T002 Create Article entity in `src/blog/schema/article.schema.ts` with all columns (id uuid PK, title, slug unique, excerpt, content, coverImageUrl, tags text[], isPublished, publishedAt, readTimeMinutes, viewsCount, createdAt, updatedAt) and composite index on `[isPublished, publishedAt]`
-- [ ] T003 Register Article entity in `src/config/database.config.ts` entities array
-- [ ] T004 Generate TypeORM migration by running `npm run migration:generate --name=CreateArticlesTable`
-- [ ] T005 Run migration with `npm run migration:run` to create the articles table
+- [x] T001 Create blog module directory structure: `src/blog/`, `src/blog/schema/`, `src/blog/dto/`
+- [x] T002 Create Article entity in `src/blog/schema/article.schema.ts` with all columns (id uuid PK, title, slug unique, excerpt, content, coverImageUrl, tags text[], isPublished, publishedAt, readTimeMinutes, viewsCount, createdAt, updatedAt) and composite index on `[isPublished, publishedAt]`
+- [x] T003 Register Article entity in `src/config/database.config.ts` entities array
+- [x] T004 Generate TypeORM migration by running `npm run migration:generate --name=CreateArticlesTable`
+- [x] T005 Run migration with `npm run migration:run` to create the articles table
 
 ---
 
@@ -33,14 +33,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create `CreateArticleDto` in `src/blog/dto/create-article.dto.ts` with title (required, max 300), content (required), excerpt (optional), coverImageUrl (optional), tags (optional string[]) — all with @ApiProperty decorators
-- [ ] T007 [P] Create `UpdateArticleDto` in `src/blog/dto/update-article.dto.ts` extending `PartialType(CreateArticleDto)`
-- [ ] T008 [P] Create `FilterArticlesQueryDto` in `src/blog/dto/filter-articles-query.dto.ts` with `tag` (optional string)
-- [ ] T009 Create `BlogService` skeleton in `src/blog/blog.service.ts` — inject `Repository<Article>` via `@InjectRepository`, add private `calculateReadTime(content: string): number` method that strips HTML tags and calculates `Math.max(1, Math.ceil(wordCount / 200))`
-- [ ] T010 Create `BlogController` skeleton in `src/blog/blog.controller.ts` — route prefix `admin/blog`, inject `BlogService`, add `@Roles(UserRoleEnum.ADMIN)` guard
-- [ ] T011 [P] Create `BlogPublicController` skeleton in `src/blog/blog.public.controller.ts` — route prefix `blog`, inject `BlogService`, add `@Public()` decorator at class level
-- [ ] T012 Create `BlogModule` in `src/blog/blog.module.ts` — import `TypeOrmModule.forFeature([Article])`, register both controllers and service
-- [ ] T013 Register `BlogModule` in `src/app.module.ts` imports array
+- [x] T006 Create `CreateArticleDto` in `src/blog/dto/create-article.dto.ts` with title (required, max 300), content (required), excerpt (optional), coverImageUrl (optional), tags (optional string[]) — all with @ApiProperty decorators
+- [x] T007 [P] Create `UpdateArticleDto` in `src/blog/dto/update-article.dto.ts` extending `PartialType(CreateArticleDto)`
+- [x] T008 [P] Create `FilterArticlesQueryDto` in `src/blog/dto/filter-articles-query.dto.ts` with `tag` (optional string)
+- [x] T009 Create `BlogService` skeleton in `src/blog/blog.service.ts` — inject `Repository<Article>` via `@InjectRepository`, add private `calculateReadTime(content: string): number` method that strips HTML tags and calculates `Math.max(1, Math.ceil(wordCount / 200))`
+- [x] T010 Create `BlogController` skeleton in `src/blog/blog.controller.ts` — route prefix `admin/blog`, inject `BlogService`, add `@Roles(UserRoleEnum.ADMIN)` guard
+- [x] T011 [P] Create `BlogPublicController` skeleton in `src/blog/blog.public.controller.ts` — route prefix `blog`, inject `BlogService`, add `@Public()` decorator at class level
+- [x] T012 Create `BlogModule` in `src/blog/blog.module.ts` — import `TypeOrmModule.forFeature([Article])`, register both controllers and service
+- [x] T013 Register `BlogModule` in `src/app.module.ts` imports array
 
 **Checkpoint**: Module compiles and is loaded by NestJS — no functional endpoints yet
 
@@ -54,11 +54,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Implement `create(dto: CreateArticleDto)` method in `src/blog/blog.service.ts` — generate slug from title using shared `generateUniqueSlug()`, calculate `readTimeMinutes` from content, save entity with `isPublished = false`, `publishedAt = null`, `viewsCount = 0`, default `tags = []` if not provided, return created article
-- [ ] T015 [US1] Implement `findOneOrFail(id: string)` private method in `src/blog/blog.service.ts` — find by UUID, throw `NotFoundException` if not found
-- [ ] T016 [US1] Implement `update(id: string, dto: UpdateArticleDto)` method in `src/blog/blog.service.ts` — find article, if title changed regenerate slug with uniqueness check, if content changed recalculate `readTimeMinutes`, merge DTO fields, save and return updated article
-- [ ] T017 [US1] Wire `POST /admin/blog` endpoint in `src/blog/blog.controller.ts` — accept `@Body() CreateArticleDto`, call `this.blogService.create()`, return 201 Created with @ApiResponse decorators
-- [ ] T018 [US1] Wire `PATCH /admin/blog/:id` endpoint in `src/blog/blog.controller.ts` — accept `@Param('id', ParseUUIDPipe)` and `@Body() UpdateArticleDto`, call `this.blogService.update()`, return 200 OK
+- [x] T014 [US1] Implement `create(dto: CreateArticleDto)` method in `src/blog/blog.service.ts` — generate slug from title using shared `generateUniqueSlug()`, calculate `readTimeMinutes` from content, save entity with `isPublished = false`, `publishedAt = null`, `viewsCount = 0`, default `tags = []` if not provided, return created article
+- [x] T015 [US1] Implement `findOneOrFail(id: string)` private method in `src/blog/blog.service.ts` — find by UUID, throw `NotFoundException` if not found
+- [x] T016 [US1] Implement `update(id: string, dto: UpdateArticleDto)` method in `src/blog/blog.service.ts` — find article, if title changed regenerate slug with uniqueness check, if content changed recalculate `readTimeMinutes`, merge DTO fields, save and return updated article
+- [x] T017 [US1] Wire `POST /admin/blog` endpoint in `src/blog/blog.controller.ts` — accept `@Body() CreateArticleDto`, call `this.blogService.create()`, return 201 Created with @ApiResponse decorators
+- [x] T018 [US1] Wire `PATCH /admin/blog/:id` endpoint in `src/blog/blog.controller.ts` — accept `@Param('id', ParseUUIDPipe)` and `@Body() UpdateArticleDto`, call `this.blogService.update()`, return 200 OK
 
 **Checkpoint**: Admin can create and edit articles with auto slugs and read time — US1 is fully functional
 
@@ -72,10 +72,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Implement `togglePublish(id: string)` method in `src/blog/blog.service.ts` — find article, if currently unpublished validate `excerpt` exists (throw `BadRequestException` if missing), toggle `isPublished`, if first publish (`publishedAt === null`) set `publishedAt = new Date()`, do NOT reset `publishedAt` on unpublish, save and return `{ id, isPublished, publishedAt, message }`
-- [ ] T020 [US2] Implement `remove(id: string)` method in `src/blog/blog.service.ts` — find article, collect coverImageUrl for purge (log URL, defer actual purge to Media module integration), delete from DB, return success message
-- [ ] T021 [US2] Wire `PATCH /admin/blog/:id/publish` endpoint in `src/blog/blog.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.blogService.togglePublish()`, return 200 OK
-- [ ] T022 [US2] Wire `DELETE /admin/blog/:id` endpoint in `src/blog/blog.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.blogService.remove()`, return 200 OK with `{ message: "Article deleted successfully" }`
+- [x] T019 [US2] Implement `togglePublish(id: string)` method in `src/blog/blog.service.ts` — find article, if currently unpublished validate `excerpt` exists (throw `BadRequestException` if missing), toggle `isPublished`, if first publish (`publishedAt === null`) set `publishedAt = new Date()`, do NOT reset `publishedAt` on unpublish, save and return `{ id, isPublished, publishedAt, message }`
+- [x] T020 [US2] Implement `remove(id: string)` method in `src/blog/blog.service.ts` — find article, collect coverImageUrl for purge (log URL, defer actual purge to Media module integration), delete from DB, return success message
+- [x] T021 [US2] Wire `PATCH /admin/blog/:id/publish` endpoint in `src/blog/blog.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.blogService.togglePublish()`, return 200 OK
+- [x] T022 [US2] Wire `DELETE /admin/blog/:id` endpoint in `src/blog/blog.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.blogService.remove()`, return 200 OK with `{ message: "Article deleted successfully" }`
 
 **Checkpoint**: Admin can publish/unpublish and delete articles — US1 + US2 fully functional
 
@@ -89,10 +89,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Implement `findPublished(query: PaginationQueryDto, filters: FilterArticlesQueryDto)` method in `src/blog/blog.service.ts` — query `{ where: { isPublished: true } }` with pagination (`skip/take`), apply optional tag filter using case-insensitive array containment, sort by `publishedAt DESC`, return `{ data, meta }` — **exclude `content` field from list response** for performance using `select`
-- [ ] T024 [US3] Implement `findBySlug(slug: string)` method in `src/blog/blog.service.ts` — query `{ where: { slug, isPublished: true } }`, throw `NotFoundException` if not found, atomically increment `viewsCount` using `this.articleRepo.increment({ id: article.id }, 'viewsCount', 1)`, return article with incremented count
-- [ ] T025 [US3] Wire `GET /blog` endpoint in `src/blog/blog.public.controller.ts` — accept `@Query() PaginationQueryDto` and `@Query() FilterArticlesQueryDto`, call `this.blogService.findPublished()`, return 200 OK with paginated response
-- [ ] T026 [US3] Wire `GET /blog/:slug` endpoint in `src/blog/blog.public.controller.ts` — accept `@Param('slug')`, call `this.blogService.findBySlug()`, return 200 OK with article object
+- [x] T023 [US3] Implement `findPublished(query: PaginationQueryDto, filters: FilterArticlesQueryDto)` method in `src/blog/blog.service.ts` — query `{ where: { isPublished: true } }` with pagination (`skip/take`), apply optional tag filter using case-insensitive array containment, sort by `publishedAt DESC`, return `{ data, meta }` — **exclude `content` field from list response** for performance using `select`
+- [x] T024 [US3] Implement `findBySlug(slug: string)` method in `src/blog/blog.service.ts` — query `{ where: { slug, isPublished: true } }`, throw `NotFoundException` if not found, atomically increment `viewsCount` using `this.articleRepo.increment({ id: article.id }, 'viewsCount', 1)`, return article with incremented count
+- [x] T025 [US3] Wire `GET /blog` endpoint in `src/blog/blog.public.controller.ts` — accept `@Query() PaginationQueryDto` and `@Query() FilterArticlesQueryDto`, call `this.blogService.findPublished()`, return 200 OK with paginated response
+- [x] T026 [US3] Wire `GET /blog/:slug` endpoint in `src/blog/blog.public.controller.ts` — accept `@Param('slug')`, call `this.blogService.findBySlug()`, return 200 OK with article object
 
 **Checkpoint**: Public-facing endpoints work — visitors can browse, filter, and read articles with view counting
 
@@ -106,8 +106,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T027 [US4] Implement `findAll(query: PaginationQueryDto)` method in `src/blog/blog.service.ts` — use `findAndCount()` with `skip: (page-1)*limit`, `take: limit`, dynamic `order` from sortBy/order params, return `{ data, meta: { page, limit, total, totalPages } }`
-- [ ] T028 [US4] Wire `GET /admin/blog` endpoint in `src/blog/blog.controller.ts` — accept `@Query() PaginationQueryDto` (with `ValidationPipe` implicit), call `this.blogService.findAll()`, return 200 OK with paginated response
+- [x] T027 [US4] Implement `findAll(query: PaginationQueryDto)` method in `src/blog/blog.service.ts` — use `findAndCount()` with `skip: (page-1)*limit`, `take: limit`, dynamic `order` from sortBy/order params, return `{ data, meta: { page, limit, total, totalPages } }`
+- [x] T028 [US4] Wire `GET /admin/blog` endpoint in `src/blog/blog.controller.ts` — accept `@Query() PaginationQueryDto` (with `ValidationPipe` implicit), call `this.blogService.findAll()`, return 200 OK with paginated response
 
 **Checkpoint**: Admin dashboard listing works with full pagination — all 4 user stories functional
 
@@ -117,10 +117,10 @@
 
 **Purpose**: Swagger documentation, validation, and final verification
 
-- [ ] T029 [P] Add Swagger `@ApiTags('Blog')` to `BlogController` and `@ApiTags('Blog (Public)')` to `BlogPublicController` in their respective files
-- [ ] T030 [P] Add `@ApiOperation()` and `@ApiResponse()` decorators to all 7 endpoints across `src/blog/blog.controller.ts` and `src/blog/blog.public.controller.ts`
-- [ ] T031 [P] Add `@ApiParam()` decorators for `:id` and `:slug` path parameters across both controller files
-- [ ] T032 Validate all endpoints against contracts by running through the quickstart.md curl commands in `specs/005-blog-module/quickstart.md`
+- [x] T029 [P] Add Swagger `@ApiTags('Blog')` to `BlogController` and `@ApiTags('Blog (Public)')` to `BlogPublicController` in their respective files
+- [x] T030 [P] Add `@ApiOperation()` and `@ApiResponse()` decorators to all 7 endpoints across `src/blog/blog.controller.ts` and `src/blog/blog.public.controller.ts`
+- [x] T031 [P] Add `@ApiParam()` decorators for `:id` and `:slug` path parameters across both controller files
+- [x] T032 Validate all endpoints against contracts by running through the quickstart.md curl commands in `specs/005-blog-module/quickstart.md`
 - [ ] T033 Verify Swagger documentation renders correctly at `http://localhost:3000/api`
 
 ---
