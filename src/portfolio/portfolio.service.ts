@@ -1,0 +1,189 @@
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { Project } from './schema/project.schema';
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { ReorderProjectsDto } from './dto/reorder-projects.dto';
+import { FilterProjectsQueryDto } from './dto/filter-projects-query.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { generateUniqueSlug } from '../common/utils/slug.util';
+
+@Injectable()
+export class PortfolioService {
+  constructor(
+    @InjectRepository(Project)
+    private readonly projectRepository: Repository<Project>,
+    private readonly configService: ConfigService,
+    private readonly dataSource: DataSource,
+  ) {}
+
+  async create(dto: CreateProjectDto): Promise<Project> {
+    const slug = await generateUniqueSlug(dto.title, this.projectRepository);
+
+    const project = this.projectRepository.create({
+      ...dto,
+      slug,
+      isPublished: false,
+      isFeatured: false,
+      order: 0,
+      images: dto.images || [],
+      techStack: dto.techStack || [],
+    });
+
+    return this.projectRepository.save(project);
+  }
+
+  async findAll(query: PaginationQueryDto) {
+    const { page = 1, limit = 10, sortBy = 'createdAt', order = 'DESC' } = query;
+
+    const [data, total] = await this.projectRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        [sortBy]: order,
+      },
+    });
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async update(id: string, dto: UpdateProjectDto): Promise<Project> {
+    const project = await this.findOneOrFail(id);
+
+    if (dto.title && dto.title !== project.title) {
+      project.slug = await generateUniqueSlug(dto.title, this.projectRepository);
+    }
+
+    Object.assign(project, dto);
+
+    return this.projectRepository.save(project);
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    const project = await this.findOneOrFail(id);
+
+    // Collect URLs for potential purge (Media module integration)
+    const urlsToPurge: string[] = [];
+    if (project.coverImageUrl) urlsToPurge.push(project.coverImageUrl);
+    if (project.images && project.images.length > 0) {
+      urlsToPurge.push(...project.images);
+    }
+
+    if (urlsToPurge.length > 0) {
+      console.log(`[PortfolioService] Deleting project ${id}. URLs flagged for purge:`, urlsToPurge);
+    }
+
+    await this.projectRepository.remove(project);
+
+    return { message: 'Project deleted successfully' };
+  }
+
+  async togglePublish(id: string): Promise<{ id: string; isPublished: boolean; message: string }> {
+    const project = await this.findOneOrFail(id);
+
+    if (!project.isPublished && !project.coverImageUrl) {
+      throw new BadRequestException('Cannot publish a project without a cover image');
+    }
+
+    project.isPublished = !project.isPublished;
+    await this.projectRepository.save(project);
+
+    return {
+      id: project.id,
+      isPublished: project.isPublished,
+      message: `Project ${project.isPublished ? 'published' : 'unpublished'} successfully`,
+    };
+  }
+
+  async toggleFeatured(id: string): Promise<{ id: string; isFeatured: boolean; message: string }> {
+    const project = await this.findOneOrFail(id);
+
+    if (!project.isFeatured) {
+      const maxFeatured = this.configService.get<number>('FEATURED_PROJECTS_MAX', 6);
+      const featuredCount = await this.projectRepository.count({ where: { isFeatured: true } });
+
+      if (featuredCount >= maxFeatured) {
+        throw new BadRequestException(`Maximum of ${maxFeatured} featured projects reached`);
+      }
+    }
+
+    project.isFeatured = !project.isFeatured;
+    await this.projectRepository.save(project);
+
+    return {
+      id: project.id,
+      isFeatured: project.isFeatured,
+      message: `Project ${project.isFeatured ? 'featured' : 'unfeatured'} successfully`,
+    };
+  }
+
+  async reorder(dto: ReorderProjectsDto): Promise<{ message: string }> {
+    await this.dataSource.transaction(async (manager) => {
+      const repository = manager.getRepository(Project);
+      for (const item of dto.items) {
+        await repository.update(item.id, { order: item.order });
+      }
+    });
+
+    return { message: 'Projects reordered successfully' };
+  }
+
+  async findPublished(filters: FilterProjectsQueryDto): Promise<Project[]> {
+    const queryBuilder = this.projectRepository.createQueryBuilder('project');
+
+    queryBuilder.where('project.isPublished = :isPublished', { isPublished: true });
+
+    if (filters.category) {
+      queryBuilder.andWhere('project.category ILIKE :category', {
+        category: `%${filters.category}%`,
+      });
+    }
+
+    if (filters.featured !== undefined) {
+      queryBuilder.andWhere('project.isFeatured = :isFeatured', {
+        isFeatured: filters.featured,
+      });
+    }
+
+    if (filters.techStack && filters.techStack.length > 0) {
+      // Use PostgreSQL array overlap operator (&&) or ANY for filtering tech stack
+      queryBuilder.andWhere('project.tech_stack && :techStack', {
+        techStack: filters.techStack,
+      });
+    }
+
+    queryBuilder.orderBy('project.order', 'ASC');
+
+    return queryBuilder.getMany();
+  }
+
+  async findBySlug(slug: string): Promise<Project> {
+    const project = await this.projectRepository.findOne({
+      where: { slug, isPublished: true },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with slug "${slug}" not found`);
+    }
+
+    return project;
+  }
+
+  private async findOneOrFail(id: string): Promise<Project> {
+    const project = await this.projectRepository.findOne({ where: { id } });
+    if (!project) {
+      throw new NotFoundException(`Project with ID "${id}" not found`);
+    }
+    return project;
+  }
+}
