@@ -14,6 +14,7 @@ import { throttlerConfig } from './config/throttler.config';
 import { databaseConfig } from './config/database.config';
 import { MAIL_OPTIONS } from './config/mail.config';
 import { MailModule } from './mail/mail.module';
+import { PaymentsModule } from './payments/payments.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CACHE_OPTIONS } from './config/cache.config';
 import { AuthGuard } from './auth/guards/auth.guard';
@@ -57,6 +58,7 @@ const JWT_OPTIONS = {
     AuthModule,
     UserModule,
     MailModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   exports: [JwtModule],
