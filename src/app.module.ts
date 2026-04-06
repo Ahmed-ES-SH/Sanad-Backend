@@ -14,6 +14,7 @@ import { throttlerConfig } from './config/throttler.config';
 import { databaseConfig } from './config/database.config';
 import { MAIL_OPTIONS } from './config/mail.config';
 import { MailModule } from './mail/mail.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { ServicesModule } from './services/services.module';
 import { ContactModule } from './contact/contact.module';
@@ -61,6 +62,7 @@ const JWT_OPTIONS = {
     AuthModule,
     UserModule,
     MailModule,
+    DashboardModule,
     PortfolioModule,
     ServicesModule,
     ContactModule,

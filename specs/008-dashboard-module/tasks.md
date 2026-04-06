@@ -19,8 +19,8 @@
 
 **Purpose**: Create the module skeleton, response DTO, and directory structure
 
-- [ ] T001 Create dashboard module directory structure: `src/dashboard/`, `src/dashboard/dto/`
-- [ ] T002 [P] Create `DashboardStatsDto` in `src/dashboard/dto/dashboard-stats.dto.ts` with all @ApiProperty fields: totalProjects, publishedProjects, totalArticles, publishedArticles, totalServices, publishedServices, unreadMessages, totalPayments, totalRevenue, totalUsers, and optional errors array
+- [x] T001 Create dashboard module directory structure: `src/dashboard/`, `src/dashboard/dto/`
+- [x] T002 [P] Create `DashboardStatsDto` in `src/dashboard/dto/dashboard-stats.dto.ts` with all @ApiProperty fields: totalProjects, publishedProjects, totalArticles, publishedArticles, totalServices, publishedServices, unreadMessages, totalPayments, totalRevenue, totalUsers, and optional errors array
 
 ---
 
@@ -30,10 +30,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Create `DashboardService` skeleton in `src/dashboard/dashboard.service.ts` — inject repositories for Service, Project, Article, ContactMessage, Payment, User entities via `@InjectRepository` for each
-- [ ] T004 Create `DashboardController` skeleton in `src/dashboard/dashboard.controller.ts` — route prefix `admin/dashboard`, inject `DashboardService`, add `@Roles(UserRoleEnum.ADMIN)` guard
-- [ ] T005 Create `DashboardModule` in `src/dashboard/dashboard.module.ts` — import `TypeOrmModule.forFeature([Service, Project, Article, ContactMessage, Payment, User])`, register controller and service
-- [ ] T006 Register `DashboardModule` in `src/app.module.ts` imports array
+- [x] T003 Create `DashboardService` skeleton in `src/dashboard/dashboard.service.ts` — inject repositories for Service, Project, Article, ContactMessage, Payment, User entities via `@InjectRepository` for each
+- [x] T004 Create `DashboardController` skeleton in `src/dashboard/dashboard.controller.ts` — route prefix `admin/dashboard`, inject `DashboardService`, add `@Roles(UserRoleEnum.ADMIN)` guard
+- [x] T005 Create `DashboardModule` in `src/dashboard/dashboard.module.ts` — import `TypeOrmModule.forFeature([Service, Project, Article, ContactMessage, Payment, User])`, register controller and service
+- [x] T006 Register `DashboardModule` in `src/app.module.ts` imports array
 
 **Checkpoint**: Module compiles and is loaded by NestJS — no functional endpoint yet
 
@@ -47,14 +47,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Implement `getProjectStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total projects and `count({ where: { isPublished: true } })` for published projects. Wrap in try-catch, return `{ totalProjects, publishedProjects }` or zeros with error string on failure.
-- [ ] T008 [US1] [P] Implement `getArticleStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total articles and `count({ where: { isPublished: true } })` for published articles. Wrap in try-catch, return `{ totalArticles, publishedArticles }` or zeros with error string on failure.
-- [ ] T009 [US1] [P] Implement `getServiceStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total services and `count({ where: { isPublished: true } })` for published services. Wrap in try-catch, return `{ totalServices, publishedServices }` or zeros with error string on failure.
-- [ ] T010 [US1] [P] Implement `getMessageStats()` private method in `src/dashboard/dashboard.service.ts` — query `count({ where: { isRead: false } })` for unread messages. Wrap in try-catch, return `{ unreadMessages }` or zero with error string on failure.
-- [ ] T011 [US1] [P] Implement `getPaymentStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total payments and `createQueryBuilder` with `SUM(amount) WHERE status = 'succeeded'` using `COALESCE` for revenue. Wrap in try-catch, return `{ totalPayments, totalRevenue }` or zeros with error string on failure.
-- [ ] T012 [US1] [P] Implement `getUserStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total users. Wrap in try-catch, return `{ totalUsers }` or zero with error string on failure.
-- [ ] T013 [US1] Implement `getStats(): Promise<DashboardStatsDto>` public method in `src/dashboard/dashboard.service.ts` — call all 6 private stat methods via `Promise.all()`, merge results into a single `DashboardStatsDto` object, collect any error strings into the `errors` array (omit field if no errors).
-- [ ] T014 [US1] Wire `GET /admin/dashboard` endpoint in `src/dashboard/dashboard.controller.ts` — call `this.dashboardService.getStats()`, return 200 OK with @ApiResponse decorator typing `DashboardStatsDto`
+- [x] T007 [US1] Implement `getProjectStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total projects and `count({ where: { isPublished: true } })` for published projects. Wrap in try-catch, return `{ totalProjects, publishedProjects }` or zeros with error string on failure.
+- [x] T008 [US1] [P] Implement `getArticleStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total articles and `count({ where: { isPublished: true } })` for published articles. Wrap in try-catch, return `{ totalArticles, publishedArticles }` or zeros with error string on failure.
+- [x] T009 [US1] [P] Implement `getServiceStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total services and `count({ where: { isPublished: true } })` for published services. Wrap in try-catch, return `{ totalServices, publishedServices }` or zeros with error string on failure.
+- [x] T010 [US1] [P] Implement `getMessageStats()` private method in `src/dashboard/dashboard.service.ts` — query `count({ where: { isRead: false } })` for unread messages. Wrap in try-catch, return `{ unreadMessages }` or zero with error string on failure.
+- [x] T011 [US1] [P] Implement `getPaymentStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total payments and `createQueryBuilder` with `SUM(amount) WHERE status = 'succeeded'` using `COALESCE` for revenue. Wrap in try-catch, return `{ totalPayments, totalRevenue }` or zeros with error string on failure.
+- [x] T012 [US1] [P] Implement `getUserStats()` private method in `src/dashboard/dashboard.service.ts` — query `count()` for total users. Wrap in try-catch, return `{ totalUsers }` or zero with error string on failure.
+- [x] T013 [US1] Implement `getStats(): Promise<DashboardStatsDto>` public method in `src/dashboard/dashboard.service.ts` — call all 6 private stat methods via `Promise.all()`, merge results into a single `DashboardStatsDto` object, collect any error strings into the `errors` array (omit field if no errors).
+- [x] T014 [US1] Wire `GET /admin/dashboard` endpoint in `src/dashboard/dashboard.controller.ts` — call `this.dashboardService.getStats()`, return 200 OK with @ApiResponse decorator typing `DashboardStatsDto`
 
 **Checkpoint**: Dashboard returns accurate stats for all entities — US1 is fully functional
 
@@ -68,7 +68,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T015 [US2] Verify zero-state handling in all 6 private stat methods in `src/dashboard/dashboard.service.ts` — ensure `count()` returns 0 (not null/undefined) on empty tables and `COALESCE(SUM(...), 0)` returns 0 for revenue when no succeeded payments exist. Adjust any method that returns null instead of 0.
+- [x] T015 [US2] Verify zero-state handling in all 6 private stat methods in `src/dashboard/dashboard.service.ts` — ensure `count()` returns 0 (not null/undefined) on empty tables and `COALESCE(SUM(...), 0)` returns 0 for revenue when no succeeded payments exist. Adjust any method that returns null instead of 0.
 
 **Checkpoint**: Dashboard handles empty platform gracefully — US1 + US2 fully functional
 
@@ -78,10 +78,10 @@
 
 **Purpose**: Swagger documentation and final verification
 
-- [ ] T016 [P] Add Swagger `@ApiTags('Dashboard')` to `DashboardController` in `src/dashboard/dashboard.controller.ts`
-- [ ] T017 [P] Add `@ApiOperation({ summary: 'Get aggregated platform statistics' })` and `@ApiResponse({ status: 200, type: DashboardStatsDto })` to the GET endpoint in `src/dashboard/dashboard.controller.ts`
-- [ ] T018 Validate the endpoint against the contract by running the quickstart.md curl command in `specs/008-dashboard-module/quickstart.md`
-- [ ] T019 Verify Swagger documentation renders correctly at `http://localhost:3000/api`
+- [x] T016 [P] Add Swagger `@ApiTags('Dashboard')` to `DashboardController` in `src/dashboard/dashboard.controller.ts`
+- [x] T017 [P] Add `@ApiOperation({ summary: 'Get aggregated platform statistics' })` and `@ApiResponse({ status: 200, type: DashboardStatsDto })` to the GET endpoint in `src/dashboard/dashboard.controller.ts`
+- [x] T018 Validate the endpoint against the contract by running the quickstart.md curl command in `specs/008-dashboard-module/quickstart.md`
+- [x] T019 Verify Swagger documentation renders correctly at `http://localhost:3000/api`
 
 ---
 
