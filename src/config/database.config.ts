@@ -15,8 +15,18 @@ config({ path: '.env' });
 export const databaseConfig: DataSourceOptions = {
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [User, BlackList, Service , ContactMessage , Article , Project , Payment],
-  migrations: ['dist/db/migrations/*.js'],
+  entities: [
+    User,
+    BlackList,
+    Service,
+    ContactMessage,
+    Article,
+    Project,
+    Payment,
+  ],
+  synchronize: false,
+  logging: true,
+  migrations: ['dist/src/db/migrations/*.js'],
 };
 
 const dataSource = new DataSource(databaseConfig);
