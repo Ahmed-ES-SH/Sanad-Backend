@@ -12,9 +12,9 @@ import { PaymentsClientController } from './payments.client.controller';
 import { PaymentsWebhookController } from './payments.webhook.controller';
 import { ConfigModule } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
-import { StripeModule } from 'src/stripe/stripe.module';
-import { AuthModule } from 'src/auth/auth.module';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { StripeModule } from '../stripe/stripe.module';
+import { AuthModule } from '../auth/auth.module';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 interface RawBodyRequest extends Request {
   rawBody?: Buffer;
