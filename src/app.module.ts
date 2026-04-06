@@ -40,7 +40,13 @@ const JWT_OPTIONS = {
 @Module({
   imports: [
     // config files
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath:
+        process.env.NODE_ENV !== 'production'
+          ? `.env.${process.env.NODE_ENV}`
+          : '.env',
+    }),
     TypeOrmModule.forRoot(databaseConfig),
     ThrottlerModule.forRoot(throttlerConfig),
     MailerModule.forRootAsync(MAIL_OPTIONS),
