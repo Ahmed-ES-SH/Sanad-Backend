@@ -19,12 +19,12 @@
 
 **Purpose**: Create the module skeleton, shared utilities, and database table
 
-- [ ] T001 Create portfolio module directory structure: `src/portfolio/`, `src/portfolio/schema/`, `src/portfolio/dto/`
-- [ ] T002 [P] Create shared slug utility in `src/common/utils/slug.util.ts` with `generateSlug(title)` and `generateUniqueSlug(title, repository)` functions (skip if already created by 001-services-module)
-- [ ] T003 [P] Create Project entity in `src/portfolio/schema/project.schema.ts` with all columns (id uuid PK, title, slug unique, shortDescription, longDescription, coverImageUrl, images text[], techStack text[], category, liveUrl, repoUrl, isPublished, isFeatured, order, createdAt, updatedAt) and composite index on `[isPublished, order]`
-- [ ] T004 Register Project entity in `src/config/database.config.ts` entities array
-- [ ] T005 Generate TypeORM migration by running `npm run migration:generate --name=CreateProjectsTable`
-- [ ] T006 Run migration with `npm run migration:run` to create the projects table
+- [X] T001 Create portfolio module directory structure: `src/portfolio/`, `src/portfolio/schema/`, `src/portfolio/dto/`
+- [X] T002 [P] Create shared slug utility in `src/common/utils/slug.util.ts` with `generateSlug(title)` and `generateUniqueSlug(title, repository)` functions (skip if already created by 001-services-module)
+- [X] T003 [P] Create Project entity in `src/portfolio/schema/project.schema.ts` with all columns (id uuid PK, title, slug unique, shortDescription, longDescription, coverImageUrl, images text[], techStack text[], category, liveUrl, repoUrl, isPublished, isFeatured, order, createdAt, updatedAt) and composite index on `[isPublished, order]`
+- [X] T004 Register Project entity in `src/config/database.config.ts` entities array
+- [X] T005 Generate TypeORM migration by running `npm run migration:generate --name=CreateProjectsTable`
+- [X] T006 Run migration with `npm run migration:run` to create the projects table
 
 ---
 
@@ -34,15 +34,15 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Create `CreateProjectDto` in `src/portfolio/dto/create-project.dto.ts` with title (required, max 200), shortDescription (required), longDescription (optional), coverImageUrl (optional), images (optional string[]), techStack (optional string[]), category (optional, max 100), liveUrl (optional), repoUrl (optional) — all with @ApiProperty decorators
-- [ ] T008 [P] Create `UpdateProjectDto` in `src/portfolio/dto/update-project.dto.ts` extending `PartialType(CreateProjectDto)`
-- [ ] T009 [P] Create `ReorderProjectsDto` in `src/portfolio/dto/reorder-projects.dto.ts` with `items` array of `{ id: uuid, order: int }` using @ValidateNested and @Type decorators
-- [ ] T010 [P] Create `FilterProjectsQueryDto` in `src/portfolio/dto/filter-projects-query.dto.ts` with `category` (optional string), `techStack` (optional comma-separated string[] via @Transform), `featured` (optional boolean via @Transform)
-- [ ] T011 Create `PortfolioService` skeleton in `src/portfolio/portfolio.service.ts` — inject `Repository<Project>` via `@InjectRepository` and `ConfigService` via constructor injection
-- [ ] T012 Create `PortfolioController` skeleton in `src/portfolio/portfolio.controller.ts` — route prefix `admin/portfolio`, inject `PortfolioService`, add `@Roles(UserRoleEnum.ADMIN)` guard
-- [ ] T013 [P] Create `PortfolioPublicController` skeleton in `src/portfolio/portfolio.public.controller.ts` — route prefix `portfolio`, inject `PortfolioService`, add `@Public()` decorator at class level
-- [ ] T014 Create `PortfolioModule` in `src/portfolio/portfolio.module.ts` — import `TypeOrmModule.forFeature([Project])`, register both controllers and service
-- [ ] T015 Register `PortfolioModule` in `src/app.module.ts` imports array
+- [X] T007 Create `CreateProjectDto` in `src/portfolio/dto/create-project.dto.ts` with title (required, max 200), shortDescription (required), longDescription (optional), coverImageUrl (optional), images (optional string[]), techStack (optional string[]), category (optional, max 100), liveUrl (optional), repoUrl (optional) — all with @ApiProperty decorators
+- [X] T008 [P] Create `UpdateProjectDto` in `src/portfolio/dto/update-project.dto.ts` extending `PartialType(CreateProjectDto)`
+- [X] T009 [P] Create `ReorderProjectsDto` in `src/portfolio/dto/reorder-projects.dto.ts` with `items` array of `{ id: uuid, order: int }` using @ValidateNested and @Type decorators
+- [X] T010 [P] Create `FilterProjectsQueryDto` in `src/portfolio/dto/filter-projects-query.dto.ts` with `category` (optional string), `techStack` (optional comma-separated string[] via @Transform), `featured` (optional boolean via @Transform)
+- [X] T011 Create `PortfolioService` skeleton in `src/portfolio/portfolio.service.ts` — inject `Repository<Project>` via `@InjectRepository` and `ConfigService` via constructor injection
+- [X] T012 Create `PortfolioController` skeleton in `src/portfolio/portfolio.controller.ts` — route prefix `admin/portfolio`, inject `PortfolioService`, add `@Roles(UserRoleEnum.ADMIN)` guard
+- [X] T013 [P] Create `PortfolioPublicController` skeleton in `src/portfolio/portfolio.public.controller.ts` — route prefix `portfolio`, inject `PortfolioService`, add `@Public()` decorator at class level
+- [X] T014 Create `PortfolioModule` in `src/portfolio/portfolio.module.ts` — import `TypeOrmModule.forFeature([Project])`, register both controllers and service
+- [X] T015 Register `PortfolioModule` in `src/app.module.ts` imports array
 
 **Checkpoint**: Module compiles and is loaded by NestJS — no functional endpoints yet
 
@@ -56,8 +56,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Implement `create(dto: CreateProjectDto)` method in `src/portfolio/portfolio.service.ts` — generate slug from title using shared `generateUniqueSlug()`, save entity with `isPublished = false`, `isFeatured = false`, `order = 0`, default `images = []` and `techStack = []` if not provided, return created project
-- [ ] T017 [US1] Wire `POST /admin/portfolio` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Body() CreateProjectDto`, call `this.portfolioService.create()`, return 201 Created with @ApiResponse decorators
+- [X] T016 [US1] Implement `create(dto: CreateProjectDto)` method in `src/portfolio/portfolio.service.ts` — generate slug from title using shared `generateUniqueSlug()`, save entity with `isPublished = false`, `isFeatured = false`, `order = 0`, default `images = []` and `techStack = []` if not provided, return created project
+- [X] T017 [US1] Wire `POST /admin/portfolio` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Body() CreateProjectDto`, call `this.portfolioService.create()`, return 201 Created with @ApiResponse decorators
 
 **Checkpoint**: Admin can create projects with auto-generated unique slugs — US1 is fully functional
 
@@ -71,11 +71,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Implement `findOneOrFail(id: string)` private method in `src/portfolio/portfolio.service.ts` — find by UUID, throw `NotFoundException` if not found
-- [ ] T019 [US2] Implement `update(id: string, dto: UpdateProjectDto)` method in `src/portfolio/portfolio.service.ts` — find project, if title changed regenerate slug with uniqueness check, merge DTO fields (handle images array merge), save and return updated project
-- [ ] T020 [US2] Implement `remove(id: string)` method in `src/portfolio/portfolio.service.ts` — find project, collect coverImageUrl + images array for purge (log URLs, defer actual purge to Media module integration), delete from DB, return success message
-- [ ] T021 [US2] Wire `PATCH /admin/portfolio/:id` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Param('id', ParseUUIDPipe)` and `@Body() UpdateProjectDto`, call `this.portfolioService.update()`, return 200 OK
-- [ ] T022 [US2] Wire `DELETE /admin/portfolio/:id` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.portfolioService.remove()`, return 200 OK with `{ message: "Project deleted successfully" }`
+- [X] T018 [US2] Implement `findOneOrFail(id: string)` private method in `src/portfolio/portfolio.service.ts` — find by UUID, throw `NotFoundException` if not found
+- [X] T019 [US2] Implement `update(id: string, dto: UpdateProjectDto)` method in `src/portfolio/portfolio.service.ts` — find project, if title changed regenerate slug with uniqueness check, merge DTO fields (handle images array merge), save and return updated project
+- [X] T020 [US2] Implement `remove(id: string)` method in `src/portfolio/portfolio.service.ts` — find project, collect coverImageUrl + images array for purge (log URLs, defer actual purge to Media module integration), delete from DB, return success message
+- [X] T021 [US2] Wire `PATCH /admin/portfolio/:id` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Param('id', ParseUUIDPipe)` and `@Body() UpdateProjectDto`, call `this.portfolioService.update()`, return 200 OK
+- [X] T022 [US2] Wire `DELETE /admin/portfolio/:id` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.portfolioService.remove()`, return 200 OK with `{ message: "Project deleted successfully" }`
 
 **Checkpoint**: Admin can update and delete projects — US1 + US2 fully functional
 
@@ -89,12 +89,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Implement `togglePublish(id: string)` method in `src/portfolio/portfolio.service.ts` — find project, if currently unpublished validate `coverImageUrl` exists (throw `BadRequestException` if missing), toggle `isPublished`, save and return `{ id, isPublished, message }`
-- [ ] T024 [US3] Implement `toggleFeatured(id: string)` method in `src/portfolio/portfolio.service.ts` — find project, if currently unfeatured count existing featured projects and compare to `ConfigService.get('FEATURED_PROJECTS_MAX', 6)` (throw `BadRequestException` if limit reached), toggle `isFeatured`, save and return `{ id, isFeatured, message }`
-- [ ] T025 [US3] Implement `reorder(dto: ReorderProjectsDto)` method in `src/portfolio/portfolio.service.ts` — use TypeORM `manager.transaction()` to update all order values atomically, return success message
-- [ ] T026 [US3] Wire `PATCH /admin/portfolio/:id/publish` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.portfolioService.togglePublish()`, return 200 OK
-- [ ] T027 [US3] Wire `PATCH /admin/portfolio/:id/feature` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.portfolioService.toggleFeatured()`, return 200 OK
-- [ ] T028 [US3] Wire `PATCH /admin/portfolio/reorder` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Body() ReorderProjectsDto`, call `this.portfolioService.reorder()`, return 200 OK — **⚠️ IMPORTANT**: Register this route BEFORE the `:id` routes to avoid path collision
+- [X] T023 [US3] Implement `togglePublish(id: string)` method in `src/portfolio/portfolio.service.ts` — find project, if currently unpublished validate `coverImageUrl` exists (throw `BadRequestException` if missing), toggle `isPublished`, save and return `{ id, isPublished, message }`
+- [X] T024 [US3] Implement `toggleFeatured(id: string)` method in `src/portfolio/portfolio.service.ts` — find project, if currently unfeatured count existing featured projects and compare to `ConfigService.get('FEATURED_PROJECTS_MAX', 6)` (throw `BadRequestException` if limit reached), toggle `isFeatured`, save and return `{ id, isFeatured, message }`
+- [X] T025 [US3] Implement `reorder(dto: ReorderProjectsDto)` method in `src/portfolio/portfolio.service.ts` — use TypeORM `manager.transaction()` to update all order values atomically, return success message
+- [X] T026 [US3] Wire `PATCH /admin/portfolio/:id/publish` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.portfolioService.togglePublish()`, return 200 OK
+- [X] T027 [US3] Wire `PATCH /admin/portfolio/:id/feature` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Param('id', ParseUUIDPipe)`, call `this.portfolioService.toggleFeatured()`, return 200 OK
+- [X] T028 [US3] Wire `PATCH /admin/portfolio/reorder` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Body() ReorderProjectsDto`, call `this.portfolioService.reorder()`, return 200 OK — **⚠️ IMPORTANT**: Register this route BEFORE the `:id` routes to avoid path collision
 
 **Checkpoint**: Publish/unpublish, featuring, and reorder work — US1 + US2 + US3 fully functional
 
@@ -108,10 +108,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T029 [US4] Implement `findPublished(filters: FilterProjectsQueryDto)` method in `src/portfolio/portfolio.service.ts` — query `{ where: { isPublished: true }, order: { order: 'ASC' } }`, apply optional filters: category via `ILIKE`, techStack via array overlap (`&&` operator or `ANY`), featured via `{ isFeatured: true }`, return array of published projects
-- [ ] T030 [US4] Implement `findBySlug(slug: string)` method in `src/portfolio/portfolio.service.ts` — query `{ where: { slug, isPublished: true } }`, throw `NotFoundException` if not found (covers both non-existent and unpublished)
-- [ ] T031 [US4] Wire `GET /portfolio` endpoint in `src/portfolio/portfolio.public.controller.ts` — accept `@Query() FilterProjectsQueryDto`, call `this.portfolioService.findPublished()`, return 200 OK with `{ data: [...] }`
-- [ ] T032 [US4] Wire `GET /portfolio/:slug` endpoint in `src/portfolio/portfolio.public.controller.ts` — accept `@Param('slug')`, call `this.portfolioService.findBySlug()`, return 200 OK with project object
+- [X] T029 [US4] Implement `findPublished(filters: FilterProjectsQueryDto)` method in `src/portfolio/portfolio.service.ts` — query `{ where: { isPublished: true }, order: { order: 'ASC' } }`, apply optional filters: category via `ILIKE`, techStack via array overlap (`&&` operator or `ANY`), featured via `{ isFeatured: true }`, return array of published projects
+- [X] T030 [US4] Implement `findBySlug(slug: string)` method in `src/portfolio/portfolio.service.ts` — query `{ where: { slug, isPublished: true } }`, throw `NotFoundException` if not found (covers both non-existent and unpublished)
+- [X] T031 [US4] Wire `GET /portfolio` endpoint in `src/portfolio/portfolio.public.controller.ts` — accept `@Query() FilterProjectsQueryDto`, call `this.portfolioService.findPublished()`, return 200 OK with `{ data: [...] }`
+- [X] T032 [US4] Wire `GET /portfolio/:slug` endpoint in `src/portfolio/portfolio.public.controller.ts` — accept `@Param('slug')`, call `this.portfolioService.findBySlug()`, return 200 OK with project object
 
 **Checkpoint**: Public-facing endpoints work — visitors can browse, filter, and view projects
 
@@ -125,8 +125,8 @@
 
 ### Implementation for User Story 5
 
-- [ ] T033 [US5] Implement `findAll(query: PaginationQueryDto)` method in `src/portfolio/portfolio.service.ts` — use `findAndCount()` with `skip: (page-1)*limit`, `take: limit`, dynamic `order` from sortBy/order params, return `{ data, meta: { page, limit, total, totalPages } }`
-- [ ] T034 [US5] Wire `GET /admin/portfolio` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Query() PaginationQueryDto` (with `ValidationPipe` implicit), call `this.portfolioService.findAll()`, return 200 OK with paginated response
+- [X] T033 [US5] Implement `findAll(query: PaginationQueryDto)` method in `src/portfolio/portfolio.service.ts` — use `findAndCount()` with `skip: (page-1)*limit`, `take: limit`, dynamic `order` from sortBy/order params, return `{ data, meta: { page, limit, total, totalPages } }`
+- [X] T034 [US5] Wire `GET /admin/portfolio` endpoint in `src/portfolio/portfolio.controller.ts` — accept `@Query() PaginationQueryDto` (with `ValidationPipe` implicit), call `this.portfolioService.findAll()`, return 200 OK with paginated response
 
 **Checkpoint**: Admin dashboard listing works with full pagination — all 5 user stories functional
 
@@ -136,11 +136,11 @@
 
 **Purpose**: Swagger documentation, validation, and final verification
 
-- [ ] T035 [P] Add Swagger `@ApiTags('Portfolio')` to `PortfolioController` and `@ApiTags('Portfolio (Public)')` to `PortfolioPublicController` in their respective files
-- [ ] T036 [P] Add `@ApiOperation()` and `@ApiResponse()` decorators to all 9 endpoints across `src/portfolio/portfolio.controller.ts` and `src/portfolio/portfolio.public.controller.ts`
-- [ ] T037 [P] Add `@ApiParam()` decorators for `:id` and `:slug` path parameters across both controller files
-- [ ] T038 Validate all endpoints against contracts by running through the quickstart.md curl commands in `specs/002-portfolio-module/quickstart.md`
-- [ ] T039 Verify Swagger documentation renders correctly at `http://localhost:3000/api`
+- [X] T035 [P] Add Swagger `@ApiTags('Portfolio')` to `PortfolioController` and `@ApiTags('Portfolio (Public)')` to `PortfolioPublicController` in their respective files
+- [X] T036 [P] Add `@ApiOperation()` and `@ApiResponse()` decorators to all 9 endpoints across `src/portfolio/portfolio.controller.ts` and `src/portfolio/portfolio.public.controller.ts`
+- [X] T037 [P] Add `@ApiParam()` decorators for `:id` and `:slug` path parameters across both controller files
+- [X] T038 Validate all endpoints against contracts by running through the quickstart.md curl commands in `specs/002-portfolio-module/quickstart.md`
+- [X] T039 Verify Swagger documentation renders correctly at `http://localhost:3000/api`
 
 ---
 
