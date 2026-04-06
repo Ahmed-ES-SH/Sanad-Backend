@@ -1,17 +1,25 @@
-import { Repository, Not, ObjectLiteral } from 'typeorm';
 
 /**
- * Generate a URL-friendly slug from a title string.
- * Lowercases, replaces whitespace with hyphens, strips non-alphanumeric chars.
+ * Generates a unique slug by checking against the database using the provided repository.
+ * If a slug already exists, it appends a counter (e.g., "my-slug-1").
  */
-export function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+export async function generateUniqueSlug(
+  title: string,
+  repository: { findOne: (options: any) => Promise<any> },
+): Promise<string> {
+  const baseSlug = generateSlug(title);
+  let slug = baseSlug;
+  let counter = 1;
+
+  while (await repository.findOne({ where: { slug } })) {
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
+  return slug;
+import { Repository, Not, ObjectLiteral } from 'typeorm';
+
+
 
 /**
  * Generate a unique slug by checking existence in the repository
