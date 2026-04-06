@@ -1,15 +1,3 @@
-/**
- * Standard utility for generating SEO-friendly slugs.
- */
-export function generateSlug(text: string): string {
-  if (!text) return '';
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '') // remove special chars
-    .replace(/[\s_-]+/g, '-') // spaces/underscores to hyphens
-    .replace(/^-+|-+$/g, ''); // trim leading/trailing hyphens
-}
 
 /**
  * Generates a unique slug by checking against the database using the provided repository.
@@ -29,4 +17,45 @@ export async function generateUniqueSlug(
   }
 
   return slug;
+import { Repository, Not, ObjectLiteral } from 'typeorm';
+
+
+
+/**
+ * Generate a unique slug by checking existence in the repository
+ * and appending incremental suffixes if needed.
+ */
+export async function generateUniqueSlug<T extends ObjectLiteral>(
+  title: string,
+  repository: Repository<T>,
+  slugColumn: string = 'slug',
+  excludeId?: string,
+): Promise<string> {
+  const baseSlug = generateSlug(title);
+
+  const whereBase: Record<string, unknown> = { [slugColumn]: baseSlug };
+  if (excludeId) {
+    whereBase.id = Not(excludeId);
+  }
+  const existing = await repository.findOne({ where: whereBase as any });
+
+  if (!existing) {
+    return baseSlug;
+  }
+
+  // Append incremental suffix
+  let suffix = 1;
+  while (true) {
+    const candidate = `${baseSlug}-${suffix}`;
+    const whereClause: Record<string, unknown> = { [slugColumn]: candidate };
+    if (excludeId) {
+      whereClause.id = Not(excludeId);
+    }
+
+    const exists = await repository.findOne({ where: whereClause as any });
+    if (!exists) {
+      return candidate;
+    }
+    suffix++;
+  }
 }

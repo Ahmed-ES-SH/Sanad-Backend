@@ -15,10 +15,13 @@ import { databaseConfig } from './config/database.config';
 import { MAIL_OPTIONS } from './config/mail.config';
 import { MailModule } from './mail/mail.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
+import { ServicesModule } from './services/services.module';
+import { ContactModule } from './contact/contact.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CACHE_OPTIONS } from './config/cache.config';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { BlogModule } from './blog/blog.module';
 
 // JWT Options
 function ReturnJWTOptions(config: ConfigService) {
@@ -59,6 +62,9 @@ const JWT_OPTIONS = {
     UserModule,
     MailModule,
     PortfolioModule,
+    ServicesModule,
+    ContactModule,
+    BlogModule,
   ],
   controllers: [AppController],
   exports: [JwtModule],
