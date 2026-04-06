@@ -9,12 +9,12 @@ import {
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/schema/user.schema';
+import { User } from '../user/schema/user.schema';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { validateGoogleUserType } from './types/validateGoogleUser';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from '../mail/mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { verifyRestTokenDTO } from './dto/verify-rest-password-token.dto';
 import { sendResetPasswordDTO } from './dto/send-rest-password.dto';

@@ -6,7 +6,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { UserRoleEnum } from 'src/auth/types/UserRoleEnum';
+import { UserRoleEnum } from '../../auth/types/UserRoleEnum';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserDto {

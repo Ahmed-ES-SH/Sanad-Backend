@@ -1,7 +1,7 @@
-import { User } from 'src/user/schema/user.schema';
+import { User } from '../user/schema/user.schema';
 import { DataSourceOptions, DataSource } from 'typeorm';
 import { config } from 'dotenv';
-import { BlackList } from 'src/auth/schema/blacklisk-tokens.schema';
+import { BlackList } from '../auth/schema/blacklisk-tokens.schema';
 
 // Config
 config({ path: '.env' });
