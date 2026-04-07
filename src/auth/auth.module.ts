@@ -12,6 +12,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { MailModule } from '../mail/mail.module';
 
 import { AuthGuard } from './guards/auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { BlackList } from './schema/blacklisk-tokens.schema';
 import { AuthPublicController } from './auth.public.controller';
 
@@ -45,7 +46,13 @@ const JWT_OPTIONS = {
     PassportModule,
   ],
   controllers: [AuthController, AuthPublicController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy, AuthGuard],
+  providers: [
+    AuthService,
+    GoogleStrategy,
+    JwtStrategy,
+    AuthGuard,
+    JwtAuthGuard,
+  ],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

@@ -12,7 +12,10 @@ export class PortfolioPublicController {
 
   @Get()
   @ApiOperation({ summary: 'List published projects with optional filtering' })
-  @ApiResponse({ status: 200, description: 'Return array of published projects.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return array of published projects.',
+  })
   async findPublished(@Query() filterDto: FilterProjectsQueryDto) {
     const data = await this.portfolioService.findPublished(filterDto);
     return { data };
@@ -22,7 +25,10 @@ export class PortfolioPublicController {
   @ApiOperation({ summary: 'Get a single project by slug' })
   @ApiParam({ name: 'slug', description: 'Project SEO-friendly slug' })
   @ApiResponse({ status: 200, description: 'Return project details.' })
-  @ApiResponse({ status: 404, description: 'Project not found or not published.' })
+  @ApiResponse({
+    status: 404,
+    description: 'Project not found or not published.',
+  })
   async findBySlug(@Param('slug') slug: string) {
     return this.portfolioService.findBySlug(slug);
   }

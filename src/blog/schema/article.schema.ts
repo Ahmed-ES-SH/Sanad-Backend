@@ -7,10 +7,14 @@ import {
   Index,
   BeforeInsert,
   BeforeUpdate,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Category } from '../../categories/schema/category.schema';
 
 @Entity('articles')
 @Index(['isPublished', 'publishedAt'])
+@Index(['categoryId'])
 export class Article {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -32,6 +36,16 @@ export class Article {
 
   @Column({ type: 'text', array: true, default: [] })
   tags: string[];
+
+  @Column({ type: 'uuid', name: 'category_id', nullable: true })
+  categoryId: string | null;
+
+  @ManyToOne(() => Category, (category) => category.articles, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'category_id' })
+  category: Category | null;
 
   @Column({ type: 'boolean', default: false })
   isPublished: boolean;
@@ -55,7 +69,9 @@ export class Article {
   @BeforeUpdate()
   normalizeTags() {
     if (this.tags) {
-      this.tags = this.tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean);
+      this.tags = this.tags
+        .map((tag) => tag.trim().toLowerCase())
+        .filter(Boolean);
     }
   }
 }

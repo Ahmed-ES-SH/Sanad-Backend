@@ -7,6 +7,7 @@ import { Project } from '../portfolio/schema/project.schema';
 import { Service } from '../services/schema/service.schema';
 import { ContactMessage } from '../contact/schema/contact-message.schema';
 import { Article } from '../blog/schema/article.schema';
+import { Category } from '../categories/schema/category.schema';
 
 // Config
 config({ path: '.env' });
@@ -23,6 +24,7 @@ export const databaseConfig: DataSourceOptions = {
     Article,
     Project,
     Payment,
+    Category,
   ],
   synchronize: false,
   logging: true,

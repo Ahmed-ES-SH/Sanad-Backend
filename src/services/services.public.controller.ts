@@ -1,4 +1,5 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { ServicesService } from './services.service';
 import { Service } from './schema/service.schema';
 import { Public } from '../auth/decorators/public.decorator';
@@ -6,6 +7,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
 @ApiTags('Services (Public)')
 @Public()
+@UseGuards(ThrottlerGuard)
 @Controller('services')
 export class ServicesPublicController {
   constructor(private readonly servicesService: ServicesService) {}

@@ -5,10 +5,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Category } from '../../categories/schema/category.schema';
 
 @Entity('services')
 @Index(['isPublished', 'order'])
+@Index(['categoryId'])
 export class Service {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -35,6 +39,16 @@ export class Service {
     nullable: true,
   })
   coverImageUrl: string | null;
+
+  @Column({ type: 'uuid', name: 'category_id', nullable: true })
+  categoryId: string | null;
+
+  @ManyToOne(() => Category, (category) => category.services, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'category_id' })
+  category: Category | null;
 
   @Column({ type: 'boolean', name: 'is_published', default: false })
   isPublished: boolean;

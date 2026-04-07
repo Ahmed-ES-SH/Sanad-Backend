@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -35,4 +36,9 @@ export class CreateArticleDto {
   @IsOptional()
   @ApiPropertyOptional({ type: [String] })
   tags?: string[];
+
+  @IsUUID()
+  @IsOptional()
+  @ApiPropertyOptional({ description: 'Category ID' })
+  categoryId?: string;
 }

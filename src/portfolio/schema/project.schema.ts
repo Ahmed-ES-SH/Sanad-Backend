@@ -5,11 +5,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Category } from '../../categories/schema/category.schema';
 
 @Entity('projects')
 @Index(['isPublished', 'order'])
-@Index(['category'])
+@Index(['categoryId'])
 export class Project {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -40,8 +43,15 @@ export class Project {
   @Column({ type: 'text', array: true, name: 'tech_stack', default: '{}' })
   techStack: string[];
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  category: string | null;
+  @Column({ type: 'uuid', name: 'category_id', nullable: true })
+  categoryId: string | null;
+
+  @ManyToOne(() => Category, (category) => category.projects, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'category_id' })
+  category: Category | null;
 
   @Column({ type: 'varchar', length: 500, name: 'live_url', nullable: true })
   liveUrl: string | null;

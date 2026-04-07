@@ -24,6 +24,7 @@ import { CACHE_OPTIONS } from './config/cache.config';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { BlogModule } from './blog/blog.module';
+import { CategoriesModule } from './categories/categories.module';
 
 // JWT Options
 function ReturnJWTOptions(config: ConfigService) {
@@ -69,6 +70,7 @@ const JWT_OPTIONS = {
     ServicesModule,
     ContactModule,
     BlogModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   exports: [JwtModule],

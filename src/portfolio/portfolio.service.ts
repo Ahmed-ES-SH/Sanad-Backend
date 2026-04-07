@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -36,7 +40,12 @@ export class PortfolioService {
   }
 
   async findAll(query: PaginationQueryDto) {
-    const { page = 1, limit = 10, sortBy = 'createdAt', order = 'DESC' } = query;
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      order = 'DESC',
+    } = query;
 
     const [data, total] = await this.projectRepository.findAndCount({
       skip: (page - 1) * limit,
@@ -44,6 +53,7 @@ export class PortfolioService {
       order: {
         [sortBy]: order,
       },
+      relations: ['category'],
     });
 
     return {
@@ -61,7 +71,10 @@ export class PortfolioService {
     const project = await this.findOneOrFail(id);
 
     if (dto.title && dto.title !== project.title) {
-      project.slug = await generateUniqueSlug(dto.title, this.projectRepository);
+      project.slug = await generateUniqueSlug(
+        dto.title,
+        this.projectRepository,
+      );
     }
 
     Object.assign(project, dto);
@@ -80,7 +93,10 @@ export class PortfolioService {
     }
 
     if (urlsToPurge.length > 0) {
-      console.log(`[PortfolioService] Deleting project ${id}. URLs flagged for purge:`, urlsToPurge);
+      console.log(
+        `[PortfolioService] Deleting project ${id}. URLs flagged for purge:`,
+        urlsToPurge,
+      );
     }
 
     await this.projectRepository.remove(project);
@@ -88,11 +104,15 @@ export class PortfolioService {
     return { message: 'Project deleted successfully' };
   }
 
-  async togglePublish(id: string): Promise<{ id: string; isPublished: boolean; message: string }> {
+  async togglePublish(
+    id: string,
+  ): Promise<{ id: string; isPublished: boolean; message: string }> {
     const project = await this.findOneOrFail(id);
 
     if (!project.isPublished && !project.coverImageUrl) {
-      throw new BadRequestException('Cannot publish a project without a cover image');
+      throw new BadRequestException(
+        'Cannot publish a project without a cover image',
+      );
     }
 
     project.isPublished = !project.isPublished;
@@ -105,15 +125,24 @@ export class PortfolioService {
     };
   }
 
-  async toggleFeatured(id: string): Promise<{ id: string; isFeatured: boolean; message: string }> {
+  async toggleFeatured(
+    id: string,
+  ): Promise<{ id: string; isFeatured: boolean; message: string }> {
     const project = await this.findOneOrFail(id);
 
     if (!project.isFeatured) {
-      const maxFeatured = this.configService.get<number>('FEATURED_PROJECTS_MAX', 6);
-      const featuredCount = await this.projectRepository.count({ where: { isFeatured: true } });
+      const maxFeatured = this.configService.get<number>(
+        'FEATURED_PROJECTS_MAX',
+        6,
+      );
+      const featuredCount = await this.projectRepository.count({
+        where: { isFeatured: true },
+      });
 
       if (featuredCount >= maxFeatured) {
-        throw new BadRequestException(`Maximum of ${maxFeatured} featured projects reached`);
+        throw new BadRequestException(
+          `Maximum of ${maxFeatured} featured projects reached`,
+        );
       }
     }
 
@@ -141,11 +170,13 @@ export class PortfolioService {
   async findPublished(filters: FilterProjectsQueryDto): Promise<Project[]> {
     const queryBuilder = this.projectRepository.createQueryBuilder('project');
 
-    queryBuilder.where('project.isPublished = :isPublished', { isPublished: true });
+    queryBuilder.where('project.isPublished = :isPublished', {
+      isPublished: true,
+    });
 
-    if (filters.category) {
-      queryBuilder.andWhere('project.category ILIKE :category', {
-        category: `%${filters.category}%`,
+    if (filters.categoryId) {
+      queryBuilder.andWhere('project.categoryId = :categoryId', {
+        categoryId: filters.categoryId,
       });
     }
 
@@ -162,7 +193,9 @@ export class PortfolioService {
       });
     }
 
-    queryBuilder.orderBy('project.order', 'ASC');
+    queryBuilder
+      .leftJoinAndSelect('project.category', 'category')
+      .orderBy('project.order', 'ASC');
 
     return queryBuilder.getMany();
   }

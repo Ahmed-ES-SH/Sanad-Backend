@@ -15,9 +15,10 @@ import { Service } from './schema/service.schema';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ReorderServicesDto } from './dto/reorder-services.dto';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { ServicesPaginationQueryDto } from './dto/services-pagination-query.dto';
 import { Roles } from '../auth/decorators/Roles.decorator';
 import { UserRoleEnum } from '../auth/types/UserRoleEnum';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import {
   ApiTags,
@@ -29,7 +30,7 @@ import {
 
 @ApiTags('Services')
 @ApiBearerAuth()
-@UseGuards(RolesGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
 @Controller('admin/services')
 export class ServicesController {
@@ -46,7 +47,7 @@ export class ServicesController {
   @Get()
   @ApiOperation({ summary: 'List all services with pagination' })
   @ApiResponse({ status: 200, description: 'Paginated list of services' })
-  async findAll(@Query() query: PaginationQueryDto): Promise<{
+  async findAll(@Query() query: ServicesPaginationQueryDto): Promise<{
     data: Service[];
     meta: { page: number; limit: number; total: number; totalPages: number };
   }> {

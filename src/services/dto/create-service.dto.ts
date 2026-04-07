@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  IsUUID,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateServiceDto {
@@ -27,4 +33,9 @@ export class CreateServiceDto {
   @IsOptional()
   @ApiPropertyOptional({ description: 'Cover image URL from cloud storage' })
   coverImageUrl?: string;
+
+  @IsUUID()
+  @IsOptional()
+  @ApiPropertyOptional({ description: 'Category ID' })
+  categoryId?: string;
 }

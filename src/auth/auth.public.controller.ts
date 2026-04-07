@@ -21,7 +21,7 @@ import { AuthGuard } from '@nestjs/passport';
 import type { RequestWithUser } from './types/request.interface';
 import type { Response } from 'express';
 
-@Controller('api/auth')
+@Controller('auth')
 @Public()
 export class AuthPublicController {
   constructor(private readonly authService: AuthService) {}

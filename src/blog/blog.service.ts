@@ -52,6 +52,7 @@ export class BlogService {
       excerpt: dto.excerpt || null,
       coverImageUrl: dto.coverImageUrl || null,
       tags: dto.tags || [],
+      categoryId: dto.categoryId || null,
       isPublished: false,
       publishedAt: null,
       viewsCount: 0,
@@ -80,6 +81,8 @@ export class BlogService {
     if (dto.coverImageUrl !== undefined)
       article.coverImageUrl = dto.coverImageUrl;
     if (dto.tags !== undefined) article.tags = dto.tags;
+    if (dto.categoryId !== undefined)
+      article.categoryId = dto.categoryId || null;
 
     return this.articleRepo.save(article);
   }
@@ -148,6 +151,7 @@ export class BlogService {
     const qb = this.articleRepo
       .createQueryBuilder('article')
       .where('article.isPublished = :isPublished', { isPublished: true })
+      .leftJoinAndSelect('article.category', 'category')
       .select([
         'article.id',
         'article.title',
@@ -161,10 +165,19 @@ export class BlogService {
         'article.viewsCount',
         'article.createdAt',
         'article.updatedAt',
+        'category.id',
+        'category.name',
+        'category.slug',
       ])
       .orderBy('article.publishedAt', 'DESC')
       .skip(skip)
       .take(limit);
+
+    if (filters.categoryId) {
+      qb.andWhere('article.categoryId = :categoryId', {
+        categoryId: filters.categoryId,
+      });
+    }
 
     if (filters.tag) {
       qb.andWhere(':tag = ANY(article.tags)', {
@@ -190,6 +203,7 @@ export class BlogService {
   async findBySlug(slug: string): Promise<Article> {
     const article = await this.articleRepo.findOne({
       where: { slug, isPublished: true },
+      relations: ['category'],
     });
 
     if (!article) {
@@ -218,6 +232,7 @@ export class BlogService {
       order: { [sortBy]: order },
       skip,
       take: limit,
+      relations: ['category'],
     });
 
     const totalPages = Math.ceil(total / limit);

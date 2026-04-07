@@ -152,11 +152,7 @@ export class AuthService {
     if (user?.isEmailVerified)
       throw new BadRequestException('The user is already verified');
 
-    if (
-      !user ||
-      !user.emailVerificationTokenExpiry ||
-      user.emailVerificationTokenExpiry < new Date()
-    ) {
+    if (!user) {
       throw new BadRequestException('Invalid or expired token');
     }
 

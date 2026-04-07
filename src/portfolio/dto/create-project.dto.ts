@@ -1,5 +1,10 @@
 import {
-  IsNotEmpty, IsOptional, IsString, IsArray, MaxLength,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsArray,
+  MaxLength,
+  IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -34,14 +39,16 @@ export class CreateProjectDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  @ApiPropertyOptional({ description: 'Technologies used in the project', type: [String] })
+  @ApiPropertyOptional({
+    description: 'Technologies used in the project',
+    type: [String],
+  })
   techStack?: string[];
 
-  @IsString()
+  @IsUUID()
   @IsOptional()
-  @MaxLength(100)
-  @ApiPropertyOptional({ description: 'Project category (e.g., "Web App", "Mobile")' })
-  category?: string;
+  @ApiPropertyOptional({ description: 'Category ID' })
+  categoryId?: string;
 
   @IsString()
   @IsOptional()

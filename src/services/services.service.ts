@@ -10,6 +10,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ReorderServicesDto } from './dto/reorder-services.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { ServicesPaginationQueryDto } from './dto/services-pagination-query.dto';
 
 @Injectable()
 export class ServicesService {
@@ -93,7 +94,26 @@ export class ServicesService {
       service.slug = await this.ensureUniqueSlug(baseSlug);
     }
 
-    Object.assign(service, dto);
+    // Explicit field mapping for type safety
+    if (dto.title !== undefined) {
+      service.title = dto.title;
+    }
+    if (dto.shortDescription !== undefined) {
+      service.shortDescription = dto.shortDescription;
+    }
+    if (dto.longDescription !== undefined) {
+      service.longDescription = dto.longDescription;
+    }
+    if (dto.iconUrl !== undefined) {
+      service.iconUrl = dto.iconUrl;
+    }
+    if (dto.coverImageUrl !== undefined) {
+      service.coverImageUrl = dto.coverImageUrl;
+    }
+    if (dto.categoryId !== undefined) {
+      service.categoryId = dto.categoryId;
+    }
+
     return this.serviceRepository.save(service);
   }
 
@@ -156,6 +176,7 @@ export class ServicesService {
     return this.serviceRepository.find({
       where: { isPublished: true },
       order: { order: 'ASC' },
+      relations: ['category'],
     });
   }
 
@@ -165,6 +186,7 @@ export class ServicesService {
   async findBySlug(slug: string): Promise<Service> {
     const service = await this.serviceRepository.findOne({
       where: { slug, isPublished: true },
+      relations: ['category'],
     });
 
     if (!service) {
@@ -179,7 +201,7 @@ export class ServicesService {
   /**
    * Returns paginated list of all services with sorting.
    */
-  async findAll(query: PaginationQueryDto): Promise<{
+  async findAll(query: ServicesPaginationQueryDto): Promise<{
     data: Service[];
     meta: {
       page: number;

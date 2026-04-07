@@ -1,9 +1,14 @@
-import { IsOptional, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FilterArticlesQueryDto {
-  @IsString()
   @IsOptional()
-  @ApiProperty({ required: false })
+  @IsUUID()
+  @ApiPropertyOptional({ description: 'Filter by category ID' })
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({ required: false })
   tag?: string;
 }

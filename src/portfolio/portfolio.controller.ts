@@ -1,8 +1,26 @@
-import { Controller, Post, Body, HttpStatus, HttpCode, Patch, Param, ParseUUIDPipe, Delete, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpStatus,
+  HttpCode,
+  Patch,
+  Param,
+  ParseUUIDPipe,
+  Delete,
+  Get,
+  Query,
+} from '@nestjs/common';
 import { PortfolioService } from './portfolio.service';
 import { Roles } from '../auth/decorators/Roles.decorator';
 import { UserRoleEnum } from '../auth/types/UserRoleEnum';
-import { ApiTags, ApiOperation, ApiResponse, ApiCreatedResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiCreatedResponse,
+  ApiParam,
+} from '@nestjs/swagger';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ReorderProjectsDto } from './dto/reorder-projects.dto';
@@ -16,7 +34,10 @@ export class PortfolioController {
 
   @Get()
   @ApiOperation({ summary: 'List all projects (paginated)' })
-  @ApiResponse({ status: 200, description: 'Return paginated list of all projects.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return paginated list of all projects.',
+  })
   findAll(@Query() query: PaginationQueryDto) {
     return this.portfolioService.findAll(query);
   }
@@ -31,7 +52,9 @@ export class PortfolioController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new project' })
-  @ApiCreatedResponse({ description: 'The project has been successfully created.' })
+  @ApiCreatedResponse({
+    description: 'The project has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -42,7 +65,10 @@ export class PortfolioController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update an existing project' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
-  @ApiResponse({ status: 200, description: 'The project has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The project has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Project not found.' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -54,7 +80,10 @@ export class PortfolioController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a project' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
-  @ApiResponse({ status: 200, description: 'The project has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The project has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'Project not found.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.portfolioService.remove(id);
@@ -63,8 +92,14 @@ export class PortfolioController {
   @Patch(':id/publish')
   @ApiOperation({ summary: 'Toggle project publish status' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
-  @ApiResponse({ status: 200, description: 'Publish status toggled successfully.' })
-  @ApiResponse({ status: 400, description: 'Bad Request (e.g., missing cover image).' })
+  @ApiResponse({
+    status: 200,
+    description: 'Publish status toggled successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request (e.g., missing cover image).',
+  })
   @ApiResponse({ status: 404, description: 'Project not found.' })
   togglePublish(@Param('id', ParseUUIDPipe) id: string) {
     return this.portfolioService.togglePublish(id);
@@ -73,8 +108,14 @@ export class PortfolioController {
   @Patch(':id/feature')
   @ApiOperation({ summary: 'Toggle project featured status' })
   @ApiParam({ name: 'id', description: 'Project UUID' })
-  @ApiResponse({ status: 200, description: 'Featured status toggled successfully.' })
-  @ApiResponse({ status: 400, description: 'Bad Request (e.g., featured limit reached).' })
+  @ApiResponse({
+    status: 200,
+    description: 'Featured status toggled successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request (e.g., featured limit reached).',
+  })
   @ApiResponse({ status: 404, description: 'Project not found.' })
   toggleFeatured(@Param('id', ParseUUIDPipe) id: string) {
     return this.portfolioService.toggleFeatured(id);
