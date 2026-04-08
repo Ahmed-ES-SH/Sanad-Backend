@@ -32,6 +32,8 @@ export class AuthPublicController {
    */
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 6 * 60 * 60 * 1000 } }) // 5 times per 6 hours
   normalLogin(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
@@ -40,6 +42,8 @@ export class AuthPublicController {
    * @param token - The verification token sent to the user's email.
    */
   @Post('verify-email')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 6 * 60 * 60 * 1000 } }) // 5 times per 6 hours
   verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
   }

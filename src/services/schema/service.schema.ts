@@ -40,6 +40,15 @@ export class Service {
   })
   coverImageUrl: string | null;
 
+  @Column({
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    name: 'base_price',
+    default: 0,
+  })
+  basePrice: number;
+
   @Column({ type: 'uuid', name: 'category_id', nullable: true })
   categoryId: string | null;
 

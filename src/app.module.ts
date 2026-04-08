@@ -19,12 +19,14 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { ServicesModule } from './services/services.module';
 import { ContactModule } from './contact/contact.module';
+import { CartModule } from './cart/cart.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CACHE_OPTIONS } from './config/cache.config';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { BlogModule } from './blog/blog.module';
 import { CategoriesModule } from './categories/categories.module';
+import { HomeModule } from './home/home.module';
 
 // JWT Options
 function ReturnJWTOptions(config: ConfigService) {
@@ -69,8 +71,10 @@ const JWT_OPTIONS = {
     PortfolioModule,
     ServicesModule,
     ContactModule,
+    CartModule,
     BlogModule,
     CategoriesModule,
+    HomeModule,
   ],
   controllers: [AppController],
   exports: [JwtModule],

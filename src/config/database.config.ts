@@ -8,6 +8,8 @@ import { Service } from '../services/schema/service.schema';
 import { ContactMessage } from '../contact/schema/contact-message.schema';
 import { Article } from '../blog/schema/article.schema';
 import { Category } from '../categories/schema/category.schema';
+import { Cart } from '../cart/schema/cart.schema';
+import { CartItem } from '../cart/schema/cart-item.schema';
 
 // Config
 config({ path: '.env' });
@@ -25,10 +27,12 @@ export const databaseConfig: DataSourceOptions = {
     Project,
     Payment,
     Category,
+    Cart,
+    CartItem,
   ],
   synchronize: false,
   logging: true,
-  migrations: ['dist/src/db/migrations/*.js'],
+  migrations: ['dist/db/migrations/*.js'],
 };
 
 const dataSource = new DataSource(databaseConfig);

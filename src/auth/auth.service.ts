@@ -3,6 +3,7 @@ import * as crypto from 'crypto';
 
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   RequestTimeoutException,
   UnauthorizedException,
@@ -51,7 +52,7 @@ export class AuthService {
 
     if (!user.isEmailVerified) {
       await this.sendVerificationEmail(user);
-      return { message: 'you need to verify your email first' };
+      throw new ForbiddenException('you need to verify your email first');
     }
 
     const payload = { id: user.id, email: user.email, role: user.role };
