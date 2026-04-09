@@ -10,6 +10,8 @@ import { Article } from '../blog/schema/article.schema';
 import { Category } from '../categories/schema/category.schema';
 import { Cart } from '../cart/schema/cart.schema';
 import { CartItem } from '../cart/schema/cart-item.schema';
+import { Notification } from '../notifications/schema/notification.schema';
+import { NotificationPreferences } from '../notifications/schema/notification-preferences.schema';
 
 // Config
 config({ path: '.env' });
@@ -29,6 +31,8 @@ export const databaseConfig: DataSourceOptions = {
     Category,
     Cart,
     CartItem,
+    Notification,
+    NotificationPreferences,
   ],
   synchronize: false,
   logging: true,
