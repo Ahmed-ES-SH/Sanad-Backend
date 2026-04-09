@@ -9,12 +9,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Payment } from './schema/payment.schema';
 import { PaymentStatus } from './enums/payment-status.enum';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
 import { PaymentFilterDto } from './dto/payment-filter.dto';
 import { PaymentResponseDto } from './dto/payment-response.dto';
 import { RefundResponseDto } from './dto/refund-response.dto';
+import { NOTIFICATION_EVENTS } from '../notifications/events/notification.events';
 
 @Injectable()
 export class PaymentsService {
@@ -26,6 +28,7 @@ export class PaymentsService {
     private readonly paymentRepository: Repository<Payment>,
     private readonly stripe: Stripe,
     private readonly configService: ConfigService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.webhookSecret = this.configService.getOrThrow<string>(
       'STRIPE_WEBHOOK_SECRET',
@@ -156,6 +159,17 @@ export class PaymentsService {
     await this.paymentRepository.save(payment);
 
     this.logger.log(`Payment ${payment.id} updated to SUCCEEDED via webhook`);
+
+    // Emit notification event
+    if (payment.userId) {
+      this.eventEmitter.emit(NOTIFICATION_EVENTS.PAYMENT_SUCCESS, {
+        userId: payment.userId,
+        paymentId: payment.id,
+        amount: payment.amount,
+        title: 'Payment Successful',
+        message: `Your payment of $${payment.amount} has been processed successfully.`,
+      });
+    }
   }
 
   private async handlePaymentIntentFailed(
@@ -183,6 +197,20 @@ export class PaymentsService {
     await this.paymentRepository.save(payment);
 
     this.logger.log(`Payment ${payment.id} updated to FAILED via webhook`);
+
+    // Emit notification event
+    if (payment.userId) {
+      const failureReason =
+        intent.last_payment_error?.message || 'Unknown error';
+      this.eventEmitter.emit(NOTIFICATION_EVENTS.PAYMENT_FAILED, {
+        userId: payment.userId,
+        paymentId: payment.id,
+        amount: payment.amount,
+        reason: failureReason,
+        title: 'Payment Failed',
+        message: `Your payment of $${payment.amount} failed. Reason: ${failureReason}`,
+      });
+    }
   }
 
   private async handleChargeRefunded(charge: Stripe.Charge): Promise<void> {

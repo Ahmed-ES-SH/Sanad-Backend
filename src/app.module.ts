@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -27,6 +28,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { BlogModule } from './blog/blog.module';
 import { CategoriesModule } from './categories/categories.module';
 import { HomeModule } from './home/home.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 // JWT Options
 function ReturnJWTOptions(config: ConfigService) {
@@ -61,6 +63,12 @@ const JWT_OPTIONS = {
     MailerModule.forRootAsync(MAIL_OPTIONS),
     CacheModule.register(CACHE_OPTIONS),
     JwtModule.registerAsync(JWT_OPTIONS),
+    EventEmitterModule.forRoot({
+      wildcard: true,
+      delimiter: '.',
+      maxListeners: 100,
+      ignoreErrors: false,
+    }),
 
     // modules
     AuthModule,
@@ -75,6 +83,7 @@ const JWT_OPTIONS = {
     BlogModule,
     CategoriesModule,
     HomeModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   exports: [JwtModule],

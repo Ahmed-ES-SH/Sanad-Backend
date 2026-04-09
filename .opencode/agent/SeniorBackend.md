@@ -530,9 +530,241 @@ The agent must create a dedicated `*.config.ts` file for every library in this l
 | `@nestjs/serve-static` | `static.config.ts` |
 | `@nestjs/schedule` | `schedule.config.ts` |
 | `@nestjs/swagger` | `swagger.config.ts` |
+| `@nestjs/platform-socket.io` | `ws.config.ts` |
 | Any other lib requiring `forRootAsync` | `{libName}.config.ts` |
 
 No library configuration is ever written inline inside `AppModule`. The agent will proactively create the config file first, then import its factory function into `AppModule`.
+
+---
+
+## WebSocket Standards — Socket.IO v4 / Real-Time Notifications & Chat
+
+> **Foundational fact from the Socket.IO docs:** Socket.IO is NOT a plain WebSocket implementation. It adds a protocol layer (Engine.IO) on top. A plain WebSocket client cannot connect to a Socket.IO server. Always use `socket.io-client` on the Next.js side.
+
+### Core Architecture Rules
+
+WebSocket features are never bolted onto existing modules. Every real-time domain (chat, notifications) is a dedicated NestJS module with its own gateway, service, and types. The type contract lives in a **shared** `ws/` folder — the single source of truth for both NestJS and Next.js.
+
+### The Four TypeScript Generics — Non-Negotiable
+
+Socket.IO v4 has first-class TypeScript support. The server always receives all four generics:
+
+```ts
+Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
+```
+
+- `ClientToServerEvents` — what the server *receives* (`@SubscribeMessage` handlers)
+- `ServerToClientEvents` — what the server *emits* (`.emit()`, `.to().emit()`)
+- `InterServerEvents` — server-to-server via `io.serverSideEmit()` (typed for multi-instance coordination)
+- `SocketData` — types `socket.data` (added in socket.io@4.4.0) — **no casting required anywhere**
+
+The `SocketData` generic eliminates all type assertions on `socket.data`. The guard stamps `userId`/`userName` onto it; handlers read it as typed properties.
+
+```ts
+// ws/ws.types.ts — ALWAYS all four generics
+
+// ─── Generic 4: SocketData — types socket.data, stamped by WsJwtGuard ───────
+export interface SocketData {
+  userId:   string;
+  userName: string;
+}
+
+// ─── Typed aliases — use everywhere, never raw Server or Socket ─────────────
+export type TypedWsServer = import("socket.io").Server<
+  ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData
+>;
+
+export type TypedWsSocket = import("socket.io").Socket<
+  ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData
+>;
+```
+
+> **On the Next.js client — reversed generics:** The `AppSocket` type on the client is `Socket<ServerToClientEvents, ClientToServerEvents>`. The first parameter is what the client *receives*, the second is what it *sends*. This is the opposite of the server. Swapping them is silently wrong and the most common TypeScript mistake with Socket.IO.
+
+### `ws.config.ts` — Redis Adapter
+
+Two critical warnings from the Socket.IO docs apply here:
+
+1. **Use `ioredis`, not the `redis` package.** The `redis` package has confirmed bugs restoring Pub/Sub subscriptions after Redis reconnection.
+2. **Set `transports: ["websocket"]` on both client and server.** This skips HTTP long-polling entirely, which eliminates the sticky session requirement. If long-polling is re-enabled, sticky sessions are required even with the Redis adapter.
+3. **The standard Redis adapter does NOT support Connection State Recovery** (added in socket.io@4.6.0). Use `@socket.io/redis-streams-adapter` if missed-event recovery is required.
+
+```ts
+// config/ws.config.ts
+import { IoAdapter } from "@nestjs/platform-socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { Redis } from "ioredis";                          // ← ioredis, NEVER redis pkg
+import { ConfigService } from "@nestjs/config";
+import { INestApplication } from "@nestjs/common";
+import type { ServerOptions } from "socket.io";
+
+export class RedisIoAdapter extends IoAdapter {
+  private adapterConstructor!: ReturnType<typeof createAdapter>;
+
+  constructor(app: INestApplication, private readonly configService: ConfigService) {
+    super(app);
+  }
+
+  async connectToRedis(): Promise<void> {
+    const url       = this.configService.getOrThrow<string>("REDIS_URL");
+    const pubClient = new Redis(url);
+    const subClient = pubClient.duplicate();
+    this.adapterConstructor = createAdapter(pubClient, subClient);
+  }
+
+  createIOServer(port: number, options?: ServerOptions) {
+    const server = super.createIOServer(port, {
+      ...options,
+      cors:       { origin: this.configService.getOrThrow<string>("FRONTEND_URL"), credentials: true },
+      transports: ["websocket"],   // eliminates sticky session requirement
+    });
+    server.adapter(this.adapterConstructor);
+    return server;
+  }
+}
+
+// main.ts
+// const adapter = new RedisIoAdapter(app, app.get(ConfigService));
+// await adapter.connectToRedis();
+// app.useWebSocketAdapter(adapter);
+```
+
+### Gateway Rules — Socket.IO v4 Specifics
+
+- `@WebSocketServer() server!: TypedWsServer` — all four generics always present.
+- `@ConnectedSocket() client: TypedWsSocket` — all four generics always present.
+- `WsJwtGuard` applied at the **gateway class level** only — never per-handler.
+- Guard stamps `client.data.userId` and `client.data.userName` — typed by `SocketData`, no cast ever needed.
+- `socket.to(room).emit()` — broadcasts to room **excluding** the sender (doc-confirmed).
+- `this.server.to(room).emit()` — broadcasts to room **including** all sockets.
+- `await client.join(room)` — `join()` returns a Promise, always `await` it.
+- Sockets **auto-leave all rooms on disconnect** — no manual cleanup in `handleDisconnect`.
+- `volatile.emit` for typing updates — volatile events are dropped if the connection isn't ready, which is correct for ephemeral state.
+- Acknowledgement pattern: handlers for critical operations (e.g. `CHAT_SEND_MESSAGE`) return the ack value; clients use `socket.timeout(ms).emitWithAck()`.
+
+```ts
+// ✅ Correct gateway skeleton — all doc patterns applied
+@WebSocketGateway()
+@UseGuards(WsJwtGuard)
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer()
+  server!: TypedWsServer;
+
+  handleConnection(client: TypedWsSocket): void {
+    void client.join(`user:${client.data.userId}`);   // personal room for notifications
+  }
+
+  handleDisconnect(client: TypedWsSocket): void {
+    // No room cleanup needed — sockets auto-leave all rooms on disconnect
+  }
+
+  // Acknowledgement: handler returns the ack value. Client uses:
+  // await socket.timeout(5000).emitWithAck(WsEvent.CHAT_SEND_MESSAGE, payload)
+  @SubscribeMessage(WsEvent.CHAT_SEND_MESSAGE)
+  async handleSendMessage(
+    @MessageBody() payload: ChatSendMessagePayload,
+    @ConnectedSocket() client: TypedWsSocket
+  ): Promise<ChatSendMessageAck> {
+    const message = await this.chatService.saveMessage({
+      ...payload,
+      senderId: client.data.userId,   // ← from JWT via SocketData, never payload
+    });
+    this.server.to(payload.roomId).emit(WsEvent.CHAT_MESSAGE_RECEIVED, message);
+    return { messageId: message.id, status: message.status };
+  }
+
+  @SubscribeMessage(WsEvent.CHAT_TYPING_START)
+  async handleTypingStart(
+    @MessageBody() payload: ChatTypingPayload,
+    @ConnectedSocket() client: TypedWsSocket
+  ): Promise<void> {
+    await this.chatService.setTyping(payload.roomId, client.data.userId, true);
+    const typingUsers = await this.chatService.getTypingUsers(payload.roomId);
+    // volatile: ephemeral state — skip if connection not ready, don't buffer
+    this.server.to(payload.roomId).volatile.emit(WsEvent.CHAT_TYPING_UPDATE, {
+      roomId: payload.roomId, typingUsers,
+    });
+  }
+
+  @SubscribeMessage(WsEvent.CHAT_MESSAGE_READ)
+  async handleMessageRead(
+    @MessageBody() payload: ChatMessageReadPayload,
+    @ConnectedSocket() client: TypedWsSocket
+  ): Promise<void> {
+    await this.chatService.markMessageRead(payload.messageId, client.data.userId);
+    // socket.to() — excludes sender; only other members need this event
+    client.to(payload.roomId).emit(WsEvent.CHAT_MESSAGE_READ, {
+      ...payload, readByUserId: client.data.userId,
+    });
+  }
+}
+```
+
+### Notification Delivery Rules
+
+- Each user is joined to `user:${userId}` room in `handleConnection`. This is the standard Socket.IO pattern for per-user delivery without iterating sockets.
+- `NotificationGateway` exposes `sendToUser()`, `sendCountUpdate()`, `broadcast()`. Services call these — never access `@WebSocketServer()` from outside the gateway.
+- Unread count is **always** pushed with a new notification. Clients never derive count from an incomplete local list.
+- `invalidateUserAcrossCluster()` uses `serverSideEmit()` — typed by `InterServerEvents` — to propagate across all NestJS instances via the Redis adapter.
+
+```ts
+// ✅ Service always pairs notification with count update
+async createNotification(dto: CreateNotificationDto): Promise<void> {
+  const saved = await this.notificationRepo.save(dto);
+  const count = await this.notificationRepo.countUnread(dto.userId);
+  this.notificationGateway.sendToUser(dto.userId, saved);
+  this.notificationGateway.sendCountUpdate(dto.userId, { unreadCount: count });
+}
+```
+
+### Typing Indicator Rules
+
+- Typing state is **always in Redis** with a TTL. A gateway class property (`private map = new Map()`) is a critical failure — in-memory state is not shared across multiple NestJS instances.
+- TTL ensures stale typing keys expire even if `CHAT_TYPING_STOP` is missed.
+- The full `typingUsers` array is always pushed on every update — clients never accumulate or diff locally.
+- Client auto-stops typing after 3 seconds via a `setTimeout` — the server should never trust that `STOP` will arrive.
+
+### WebSocket Prohibited Patterns
+
+```ts
+// ❌ Raw string event name — always use WsEvent enum
+socket.emit("notification:new", payload);
+
+// ❌ Missing generics on Server
+@WebSocketServer() server: Server;
+
+// ❌ Missing generics on Socket — socket.data is untyped, requires casting
+handleMessage(@ConnectedSocket() client: Socket): void { ... }
+
+// ❌ Client generics in wrong order — silently wrong, no TS error
+type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
+// ✅ Correct:
+type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+
+// ❌ Reading identity from payload — always from client.data
+const userId = payload.userId;
+
+// ❌ In-memory typing state — multi-instance failure
+private typingMap = new Map<string, string[]>();
+
+// ❌ Using the redis npm package for the adapter — known subscription reconnect bugs
+import { createClient } from "redis";   // ← wrong
+import { Redis } from "ioredis";        // ← correct
+
+// ❌ Expecting Connection State Recovery with Redis adapter — it does NOT work
+// Use @socket.io/redis-streams-adapter if recovery is needed
+
+// ❌ emitWithAck without timeout — promise may never resolve
+await socket.emitWithAck(WsEvent.CHAT_SEND_MESSAGE, payload);
+// ✅ Correct:
+await socket.timeout(5000).emitWithAck(WsEvent.CHAT_SEND_MESSAGE, payload);
+
+// ❌ Sending notification without count
+this.server.to(`user:${userId}`).emit(WsEvent.NOTIFICATION_NEW, notification);
+// ✅ Always pair:
+this.server.to(`user:${userId}`).emit(WsEvent.NOTIFICATION_NEW, notification);
+this.server.to(`user:${userId}`).emit(WsEvent.NOTIFICATION_COUNT, { unreadCount });
+```
 
 ---
 
@@ -545,3 +777,10 @@ No library configuration is ever written inline inside `AppModule`. The agent wi
 - The agent always uses `configService.getOrThrow()` — not `configService.get()` — for required environment variables.
 - When the agent writes a service method, the return type is always declared before the implementation is written.
 - The agent never leaves a feature incomplete — if a module is created, its service, controller, DTO, and tests are all created together.
+- When implementing any real-time feature, the agent creates the `ws/` shared type contract **first** — all four generics defined before any gateway or hook code is written.
+- The agent always uses all four Socket.IO generics: `Server<C,S,I,D>` and `Socket<C,S,I,D>`. Two-generic versions are prohibited.
+- The agent never reads user identity from `@MessageBody()` — always from `client.data` stamped by `WsJwtGuard` via the `SocketData` generic.
+- Typing state in any real-time feature is always stored in Redis with a TTL — never in a gateway class property or in-memory Map.
+- The agent always uses `ioredis` for the Socket.IO Redis adapter — never the `redis` npm package.
+- The agent always sets `transports: ["websocket"]` on both NestJS and Next.js socket configs to eliminate the sticky session requirement.
+- The agent never assumes Connection State Recovery works with the Redis adapter — it documents that the Redis Streams adapter is required for that feature.
