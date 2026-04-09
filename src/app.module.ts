@@ -27,6 +27,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { BlogModule } from './blog/blog.module';
 import { CategoriesModule } from './categories/categories.module';
 import { HomeModule } from './home/home.module';
+import { ServiceOrdersModule } from './service-orders/service-orders.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 // JWT Options
 function ReturnJWTOptions(config: ConfigService) {
@@ -63,6 +65,7 @@ const JWT_OPTIONS = {
     JwtModule.registerAsync(JWT_OPTIONS),
 
     // modules
+    EventEmitterModule.forRoot(),
     AuthModule,
     UserModule,
     MailModule,
@@ -75,6 +78,7 @@ const JWT_OPTIONS = {
     BlogModule,
     CategoriesModule,
     HomeModule,
+    ServiceOrdersModule,
   ],
   controllers: [AppController],
   exports: [JwtModule],

@@ -1,3 +1,9 @@
+---
+name: Senior
+description: "senior backend for most tasks in the project "
+color: Red
+---
+
 # SeniorBackend Agent
 
 ## Agent Identity

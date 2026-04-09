@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Payment } from './schema/payment.schema';
 import { PaymentStatus } from './enums/payment-status.enum';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
@@ -26,6 +27,7 @@ export class PaymentsService {
     private readonly paymentRepository: Repository<Payment>,
     private readonly stripe: Stripe,
     private readonly configService: ConfigService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.webhookSecret = this.configService.getOrThrow<string>(
       'STRIPE_WEBHOOK_SECRET',
@@ -154,6 +156,12 @@ export class PaymentsService {
     payment.status = PaymentStatus.SUCCEEDED;
     payment.metadata = intent.metadata as Record<string, unknown> | null;
     await this.paymentRepository.save(payment);
+
+    // Emit event for ServiceOrders module to handle
+    const orderId = (intent.metadata as Record<string, unknown> | null)?.orderId as string | undefined;
+    if (orderId) {
+      this.eventEmitter.emit('payment.succeeded', { orderId });
+    }
 
     this.logger.log(`Payment ${payment.id} updated to SUCCEEDED via webhook`);
   }

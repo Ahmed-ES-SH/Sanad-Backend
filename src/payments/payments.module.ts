@@ -33,6 +33,7 @@ interface RawBodyRequest extends Request {
     PaymentsWebhookController,
   ],
   providers: [PaymentsService, AuthGuard],
+  exports: [PaymentsService],
 })
 export class PaymentsModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

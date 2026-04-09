@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git rev-parse *)",
       "Bash(mkdir *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npm install *)"
     ]
   },
   "$version": 3
