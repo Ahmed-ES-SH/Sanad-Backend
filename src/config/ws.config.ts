@@ -1,7 +1,4 @@
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { createAdapter } from '@socket.io/redis-adapter';
-import { Redis } from 'ioredis';
-import { ConfigService } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import type { ServerOptions } from 'socket.io';
 import type { Server, Socket } from 'socket.io';
@@ -19,34 +16,22 @@ export const createWsConfig = () => ({
   transports: ['websocket'],
 });
 
-export class RedisIoAdapter extends IoAdapter {
-  private adapterConstructor!: ReturnType<typeof createAdapter>;
-
-  constructor(
-    app: INestApplication,
-    private readonly configService: ConfigService,
-  ) {
+// Use default Socket.IO adapter (in-memory)
+// WebSocket gateway works on the same application port without external adapters
+export class SanadIoAdapter extends IoAdapter {
+  constructor(app: INestApplication) {
     super(app);
   }
 
-  async connectToRedis(): Promise<void> {
-    const url = this.configService.getOrThrow<string>('REDIS_URL');
-    const pubClient = new Redis(url);
-    const subClient = pubClient.duplicate();
-    this.adapterConstructor = createAdapter(pubClient, subClient);
-  }
-
   createIOServer(port: number, options?: ServerOptions): Server {
-    const server = super.createIOServer(port, {
+    return super.createIOServer(port, {
       ...options,
       cors: {
-        origin: this.configService.getOrThrow<string>('FRONTEND_URL'),
+        origin: process.env.FRONTEND_URL || '*',
         credentials: true,
       },
       transports: ['websocket'],
     });
-    server.adapter(this.adapterConstructor);
-    return server;
   }
 }
 

@@ -1,20 +1,16 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './schema/user.schema';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import * as argon2 from 'argon2';
-
-import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(dto: CreateUserDto) {
@@ -60,15 +56,9 @@ export class UserService {
   }
 
   async findById(id: number) {
-    const key = `user_${id}`;
-
-    const cachedUser = await this.cacheManager.get(key);
-    if (cachedUser) return cachedUser;
-
     const user = await this.userRepo.findOne({ where: { id } });
 
     if (user) {
-      await this.cacheManager.set(key, user);
       return user;
     }
 

@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -21,8 +20,6 @@ import { PortfolioModule } from './portfolio/portfolio.module';
 import { ServicesModule } from './services/services.module';
 import { ContactModule } from './contact/contact.module';
 import { CartModule } from './cart/cart.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CACHE_OPTIONS } from './config/cache.config';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { BlogModule } from './blog/blog.module';
@@ -63,7 +60,6 @@ const JWT_OPTIONS = {
     TypeOrmModule.forRoot(databaseConfig),
     ThrottlerModule.forRoot(throttlerConfig),
     MailerModule.forRootAsync(MAIL_OPTIONS),
-    CacheModule.register(CACHE_OPTIONS),
     JwtModule.registerAsync(JWT_OPTIONS),
     EventEmitterModule.forRoot({
       wildcard: true,
@@ -73,7 +69,6 @@ const JWT_OPTIONS = {
     }),
 
     // modules
-    EventEmitterModule.forRoot(),
     AuthModule,
     UserModule,
     MailModule,

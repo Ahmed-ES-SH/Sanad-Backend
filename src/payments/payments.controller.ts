@@ -36,9 +36,9 @@ export class PaymentsController {
    * GET /admin/payments
    *
    * List all payments with filters and pagination.
-   * 
+   *
    * Authentication: ADMIN role required
-   * 
+   *
    * Query Parameters:
    * - page (number, default: 1): Page number, min 1
    * - limit (number, default: 10): Items per page, range 1-100
@@ -48,11 +48,11 @@ export class PaymentsController {
    * - userId (string, optional): Filter by user UUID
    * - startDate (string, optional): Filter from date (ISO 8601, e.g., '2026-01-01')
    * - endDate (string, optional): Filter until date (ISO 8601, e.g., '2026-12-31')
-   * 
+   *
    * Example Request:
    * GET /admin/payments?page=1&limit=10&status=succeeded&startDate=2026-01-01
    * Headers: { Authorization: 'Bearer <admin_token>' }
-   * 
+   *
    * Example Response (200 OK):
    * {
    *   "data": [
@@ -77,7 +77,7 @@ export class PaymentsController {
    *     "totalPages": 10
    *   }
    * }
-   * 
+   *
    * Error Responses:
    * - 401 Unauthorized: Missing or invalid authentication token
    * - 403 Forbidden: Insufficient permissions (not ADMIN role)
@@ -86,12 +86,38 @@ export class PaymentsController {
   @ApiOperation({ summary: 'List all payments with filters and pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiQuery({ name: 'sortBy', required: false, type: String, example: 'createdAt' })
-  @ApiQuery({ name: 'order', required: false, type: String, enum: ['ASC', 'DESC'], example: 'DESC' })
-  @ApiQuery({ name: 'status', required: false, type: String, enum: ['pending', 'succeeded', 'failed', 'refunded'] })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    example: 'createdAt',
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    type: String,
+    enum: ['ASC', 'DESC'],
+    example: 'DESC',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    type: String,
+    enum: ['pending', 'succeeded', 'failed', 'refunded'],
+  })
   @ApiQuery({ name: 'userId', required: false, type: String })
-  @ApiQuery({ name: 'startDate', required: false, type: String, example: '2026-01-01' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, example: '2026-12-31' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    example: '2026-01-01',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    example: '2026-12-31',
+  })
   @ApiResponse({
     status: 200,
     description: 'Paginated list of payments',
@@ -107,18 +133,18 @@ export class PaymentsController {
 
   /**
    * GET /admin/payments/:id
-   * 
+   *
    * Get detailed information about a specific payment.
-   * 
+   *
    * Authentication: ADMIN role required
-   * 
+   *
    * Path Parameters:
    * - id (string, required): Payment UUID
-   * 
+   *
    * Example Request:
    * GET /admin/payments/550e8400-e29b-41d4-a716-446655440000
    * Headers: { Authorization: 'Bearer <admin_token>' }
-   * 
+   *
    * Example Response (200 OK):
    * {
    *   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -136,7 +162,7 @@ export class PaymentsController {
    *   "createdAt": "2026-04-01T12:00:00.000Z",
    *   "updatedAt": "2026-04-01T12:05:00.000Z"
    * }
-   * 
+   *
    * Error Responses:
    * - 401 Unauthorized: Missing or invalid authentication token
    * - 403 Forbidden: Insufficient permissions (not ADMIN role)
@@ -144,7 +170,11 @@ export class PaymentsController {
    */
   @Get(':id')
   @ApiOperation({ summary: 'Get a single payment by ID' })
-  @ApiParam({ name: 'id', description: 'Payment UUID', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiParam({
+    name: 'id',
+    description: 'Payment UUID',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
   @ApiResponse({
     status: 200,
     description: 'Payment details',
@@ -162,28 +192,28 @@ export class PaymentsController {
 
   /**
    * POST /admin/payments/:id/refund
-   * 
+   *
    * Refund a payment that has status 'succeeded'.
    * Only payments in 'succeeded' status can be refunded.
    * The refund is processed through Stripe and is idempotent.
-   * 
+   *
    * Authentication: ADMIN role required
-   * 
+   *
    * Path Parameters:
    * - id (string, required): Payment UUID to refund
-   * 
+   *
    * Example Request:
    * POST /admin/payments/550e8400-e29b-41d4-a716-446655440000/refund
    * Headers: { Authorization: 'Bearer <admin_token>' }
    * Body: (empty)
-   * 
+   *
    * Example Success Response (200 OK):
    * {
    *   "id": "550e8400-e29b-41d4-a716-446655440000",
    *   "status": "refunded",
    *   "message": "Payment refunded successfully"
    * }
-   * 
+   *
    * Error Responses:
    * - 400 Bad Request: Payment cannot be refunded (status is not 'succeeded')
    * - 401 Unauthorized: Missing or invalid authentication token
@@ -193,7 +223,11 @@ export class PaymentsController {
    */
   @Post(':id/refund')
   @ApiOperation({ summary: 'Refund a succeeded payment' })
-  @ApiParam({ name: 'id', description: 'Payment UUID', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiParam({
+    name: 'id',
+    description: 'Payment UUID',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
   @ApiResponse({
     status: 200,
     description: 'Payment refunded successfully',

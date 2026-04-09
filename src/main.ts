@@ -8,7 +8,7 @@ import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
-import { IoAdapter } from '@nestjs/platform-socket.io';
+import { SanadIoAdapter } from './config/ws.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -29,8 +29,8 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Attach Socket.IO adapter for WebSocket support
-  app.useWebSocketAdapter(new IoAdapter(app));
+  // Attach custom Socket.IO adapter (in-memory, no Redis)
+  app.useWebSocketAdapter(new SanadIoAdapter(app));
 
   const config = new DocumentBuilder()
     .setTitle('Cats example')
