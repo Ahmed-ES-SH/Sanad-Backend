@@ -10,6 +10,8 @@ import { Article } from '../blog/schema/article.schema';
 import { Category } from '../categories/schema/category.schema';
 import { Cart } from '../cart/schema/cart.schema';
 import { CartItem } from '../cart/schema/cart-item.schema';
+import { ServiceOrder } from '../service-orders/schema/service-order.schema';
+import { OrderUpdate } from '../service-orders/schema/order-update.schema';
 import { Notification } from '../notifications/schema/notification.schema';
 import { NotificationPreferences } from '../notifications/schema/notification-preferences.schema';
 
@@ -31,6 +33,8 @@ export const databaseConfig: DataSourceOptions = {
     Category,
     Cart,
     CartItem,
+    ServiceOrder,
+    OrderUpdate,
     Notification,
     NotificationPreferences,
   ],

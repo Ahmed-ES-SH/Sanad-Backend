@@ -158,6 +158,12 @@ export class PaymentsService {
     payment.metadata = intent.metadata as Record<string, unknown> | null;
     await this.paymentRepository.save(payment);
 
+    // Emit event for ServiceOrders module to handle
+    const orderId = (intent.metadata as Record<string, unknown> | null)?.orderId as string | undefined;
+    if (orderId) {
+      this.eventEmitter.emit('payment.succeeded', { orderId });
+    }
+
     this.logger.log(`Payment ${payment.id} updated to SUCCEEDED via webhook`);
 
     // Emit notification event

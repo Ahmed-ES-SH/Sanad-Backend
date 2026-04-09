@@ -28,6 +28,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { BlogModule } from './blog/blog.module';
 import { CategoriesModule } from './categories/categories.module';
 import { HomeModule } from './home/home.module';
+import { ServiceOrdersModule } from './service-orders/service-orders.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationsModule } from './notifications/notifications.module';
 
 // JWT Options
@@ -71,6 +73,7 @@ const JWT_OPTIONS = {
     }),
 
     // modules
+    EventEmitterModule.forRoot(),
     AuthModule,
     UserModule,
     MailModule,
@@ -83,6 +86,7 @@ const JWT_OPTIONS = {
     BlogModule,
     CategoriesModule,
     HomeModule,
+    ServiceOrdersModule,
     NotificationsModule,
   ],
   controllers: [AppController],
