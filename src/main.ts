@@ -8,6 +8,7 @@ import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,9 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL,
     credentials: true,
   });
+
+  // Attach Socket.IO adapter for WebSocket support
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   const config = new DocumentBuilder()
     .setTitle('Cats example')
