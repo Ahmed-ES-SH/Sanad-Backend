@@ -4,12 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike, FindOptionsWhere } from 'typeorm';
 import { Service } from './schema/service.schema';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ReorderServicesDto } from './dto/reorder-services.dto';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { ServicesPaginationQueryDto } from './dto/services-pagination-query.dto';
 
 @Injectable()
@@ -57,7 +56,7 @@ export class ServicesService {
   /**
    * Finds a service by ID or throws NotFoundException.
    */
-  private async findOneOrFail(id: string): Promise<Service> {
+  async findOneOrFail(id: string): Promise<Service> {
     const service = await this.serviceRepository.findOne({ where: { id } });
     if (!service) {
       throw new NotFoundException(`Service with ID "${id}" not found`);
@@ -112,6 +111,9 @@ export class ServicesService {
     }
     if (dto.categoryId !== undefined) {
       service.categoryId = dto.categoryId;
+    }
+    if (dto.basePrice !== undefined) {
+      service.basePrice = dto.basePrice;
     }
 
     return this.serviceRepository.save(service);
@@ -215,6 +217,9 @@ export class ServicesService {
       limit = 10,
       sortBy = 'createdAt',
       order = 'DESC',
+      search,
+      categoryId,
+      isPublished,
     } = query;
 
     const validSortFields: (keyof Service)[] = [
@@ -229,10 +234,33 @@ export class ServicesService {
       ? (sortBy as keyof Service)
       : 'createdAt';
 
+    const baseWhere: FindOptionsWhere<Service> = {};
+
+    if (categoryId) {
+      baseWhere.categoryId = categoryId;
+    }
+
+    if (isPublished !== undefined) {
+      baseWhere.isPublished = isPublished;
+    }
+
+    let whereCondition:
+      | FindOptionsWhere<Service>
+      | FindOptionsWhere<Service>[] = baseWhere;
+
+    if (search) {
+      whereCondition = [
+        { ...baseWhere, title: ILike(`%${search}%`) },
+        { ...baseWhere, shortDescription: ILike(`%${search}%`) },
+      ];
+    }
+
     const [data, total] = await this.serviceRepository.findAndCount({
+      where: whereCondition,
       skip: (page - 1) * limit,
       take: limit,
       order: { [safeSortBy]: order } as Record<string, 'ASC' | 'DESC'>,
+      relations: ['category'],
     });
 
     return {

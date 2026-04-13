@@ -13,9 +13,9 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { BlogService } from './blog.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Roles } from '../auth/decorators/Roles.decorator';
 import { UserRoleEnum } from '../auth/types/UserRoleEnum';
+import { GetAllArticlesQueryDto } from './dto/find-all.dto';
 
 @Controller('admin/blog')
 @Roles(UserRoleEnum.ADMIN)
@@ -36,14 +36,20 @@ export class BlogController {
   @ApiResponse({ status: 200, description: 'Article updated successfully' })
   @ApiResponse({ status: 404, description: 'Article not found' })
   @ApiParam({ name: 'id', format: 'uuid' })
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateArticleDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateArticleDto,
+  ) {
     return this.blogService.update(id, dto);
   }
 
   @Patch(':id/publish')
   @ApiOperation({ summary: 'Toggle publish status of an article' })
   @ApiResponse({ status: 200, description: 'Publish status toggled' })
-  @ApiResponse({ status: 400, description: 'Excerpt required before publishing' })
+  @ApiResponse({
+    status: 400,
+    description: 'Excerpt required before publishing',
+  })
   @ApiParam({ name: 'id', format: 'uuid' })
   togglePublish(@Param('id', ParseUUIDPipe) id: string) {
     return this.blogService.togglePublish(id);
@@ -59,9 +65,9 @@ export class BlogController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all articles with pagination' })
+  @ApiOperation({ summary: 'List all articles with pagination and filtering' })
   @ApiResponse({ status: 200, description: 'Paginated list of articles' })
-  findAll(@Query() query: PaginationQueryDto) {
+  findAll(@Query() query: GetAllArticlesQueryDto) {
     return this.blogService.findAll(query);
   }
 }

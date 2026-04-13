@@ -4,6 +4,7 @@ import {
   IsString,
   MaxLength,
   IsUUID,
+  IsNumber,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -38,4 +39,9 @@ export class CreateServiceDto {
   @IsOptional()
   @ApiPropertyOptional({ description: 'Category ID' })
   categoryId?: string;
+
+  @IsNumber()
+  @IsOptional()
+  @ApiPropertyOptional({ description: 'Base price of the service' })
+  basePrice?: number;
 }

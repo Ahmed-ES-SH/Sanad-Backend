@@ -6,6 +6,9 @@ import { ArticleSeeder } from './article.seeder';
 import { ProjectSeeder } from './project.seeder';
 import { ContactMessageSeeder } from './contact-message.seeder';
 import { ServiceSeeder } from './service.seeder';
+import { ServiceOrderSeeder } from './service-order.seeder';
+import { PaymentSeeder } from './payment.seeder';
+import { NotificationSeeder } from './notification.seeder';
 
 // Create data source from config
 const dataSource = new DataSource({
@@ -20,6 +23,9 @@ const articleSeeder = new ArticleSeeder(dataSource);
 const projectSeeder = new ProjectSeeder(dataSource);
 const contactMessageSeeder = new ContactMessageSeeder(dataSource);
 const serviceSeeder = new ServiceSeeder(dataSource);
+const serviceOrderSeeder = new ServiceOrderSeeder(dataSource);
+const paymentSeeder = new PaymentSeeder(dataSource);
+const notificationSeeder = new NotificationSeeder(dataSource);
 
 async function runSeeders(force = false) {
   console.log('========================================');
@@ -37,6 +43,9 @@ async function runSeeders(force = false) {
     if (force) {
       console.log('Truncating tables...');
       // Truncate in reverse dependency order
+      await dataSource.query('TRUNCATE TABLE notifications CASCADE');
+      await dataSource.query('TRUNCATE TABLE payments CASCADE');
+      await dataSource.query('TRUNCATE TABLE service_orders CASCADE');
       await dataSource.query('TRUNCATE TABLE contact_messages CASCADE');
       await dataSource.query('TRUNCATE TABLE services CASCADE');
       await dataSource.query('TRUNCATE TABLE projects CASCADE');
@@ -61,6 +70,15 @@ async function runSeeders(force = false) {
 
     console.log('Seeding Services...');
     await serviceSeeder.seed();
+
+    console.log('Seeding Service Orders...');
+    await serviceOrderSeeder.seed();
+
+    console.log('Seeding Payments...');
+    await paymentSeeder.seed();
+
+    console.log('Seeding Notifications...');
+    await notificationSeeder.seed();
 
     console.log('Seeding Contact Messages...');
     await contactMessageSeeder.seed();

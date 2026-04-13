@@ -1,7 +1,16 @@
-import { IsOptional, IsInt, Min, Max, IsEnum, IsIn } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+  IsEnum,
+  IsIn,
+  IsString,
+  IsBoolean,
+  IsUUID,
+} from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Service } from '../../services/schema/service.schema';
 
 /**
  * Sort Order Enum
@@ -68,4 +77,28 @@ export class ServicesPaginationQueryDto {
   @IsOptional()
   @IsEnum(SortOrder)
   order?: SortOrder = SortOrder.DESC;
+
+  @ApiPropertyOptional({
+    description: 'Search string for title or description',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by category ID',
+  })
+  @IsOptional()
+  @IsUUID('4')
+  categoryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by publish status',
+  })
+  @IsOptional()
+  @Transform(({ value }) =>
+    value === undefined ? undefined : value === 'true' || value === true,
+  )
+  @IsBoolean()
+  isPublished?: boolean;
 }

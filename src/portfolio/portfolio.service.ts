@@ -11,7 +11,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ReorderProjectsDto } from './dto/reorder-projects.dto';
 import { FilterProjectsQueryDto } from './dto/filter-projects-query.dto';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { AdminFilterProjectsQueryDto } from './dto/admin-filter-projects-query.dto';
 import { generateUniqueSlug } from '../common/utils/slug.util';
 
 @Injectable()
@@ -39,22 +39,51 @@ export class PortfolioService {
     return this.projectRepository.save(project);
   }
 
-  async findAll(query: PaginationQueryDto) {
+  async findAll(query: AdminFilterProjectsQueryDto) {
     const {
       page = 1,
       limit = 10,
       sortBy = 'createdAt',
       order = 'DESC',
+      categoryId,
+      techStack,
+      featured,
+      isPublished,
     } = query;
 
-    const [data, total] = await this.projectRepository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      order: {
-        [sortBy]: order,
-      },
-      relations: ['category'],
-    });
+    const queryBuilder = this.projectRepository
+      .createQueryBuilder('project')
+      .leftJoinAndSelect('project.category', 'category');
+
+    if (categoryId) {
+      queryBuilder.andWhere('project.categoryId = :categoryId', {
+        categoryId,
+      });
+    }
+
+    if (featured !== undefined) {
+      queryBuilder.andWhere('project.isFeatured = :featured', {
+        featured,
+      });
+    }
+
+    if (isPublished !== undefined) {
+      queryBuilder.andWhere('project.isPublished = :isPublished', {
+        isPublished,
+      });
+    }
+
+    if (techStack && techStack.length > 0) {
+      // Use PostgreSQL array overlap operator (&&)
+      queryBuilder.andWhere('project.techStack && :techStack', { techStack });
+    }
+
+    queryBuilder
+      .orderBy(`project.${sortBy}`, order)
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await queryBuilder.getManyAndCount();
 
     return {
       data,
@@ -210,6 +239,10 @@ export class PortfolioService {
     }
 
     return project;
+  }
+
+  async findOne(id: string): Promise<Project> {
+    return this.findOneOrFail(id);
   }
 
   private async findOneOrFail(id: string): Promise<Project> {

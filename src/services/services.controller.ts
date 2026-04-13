@@ -54,6 +54,14 @@ export class ServicesController {
     return this.servicesService.findAll(query);
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a service by ID' })
+  @ApiResponse({ status: 200, description: 'Service found' })
+  @ApiResponse({ status: 404, description: 'Service not found' })
+  async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Service> {
+    return this.servicesService.findOneOrFail(id);
+  }
+
   // IMPORTANT: reorder route MUST be registered before :id routes to avoid path collision
   @Patch('reorder')
   @ApiOperation({ summary: 'Batch-reorder services' })

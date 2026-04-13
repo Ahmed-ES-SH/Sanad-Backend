@@ -1,12 +1,10 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Delete,
   Param,
   Query,
-  UseGuards,
   Request,
   HttpCode,
   HttpStatus,
@@ -18,7 +16,6 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import { NotificationsService } from './notifications.service';
 import { PaginationQueryDto } from './dto/paginate-notifications.dto';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto';
@@ -33,7 +30,7 @@ export class NotificationsClientController {
   @ApiOperation({ summary: 'Get paginated notifications for the current user' })
   @ApiResponse({ status: 200, description: 'Returns paginated notifications' })
   async findAll(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user: { id: number } },
     @Query() pagination: PaginationQueryDto,
   ) {
     return this.notificationsService.findAllForUser(req.user.id, pagination);
@@ -42,7 +39,7 @@ export class NotificationsClientController {
   @Get('unread-count')
   @ApiOperation({ summary: 'Get unread notification count' })
   @ApiResponse({ status: 200, description: 'Returns unread count' })
-  async getUnreadCount(@Request() req: { user: { id: string } }) {
+  async getUnreadCount(@Request() req: { user: { id: number } }) {
     const count = await this.notificationsService.countUnread(req.user.id);
     return { unreadCount: count };
   }
@@ -52,7 +49,7 @@ export class NotificationsClientController {
   @ApiOperation({ summary: 'Mark a notification as read' })
   @ApiResponse({ status: 200, description: 'Notification marked as read' })
   async markAsRead(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user: { id: number } },
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.notificationsService.markAsRead(id, req.user.id);
@@ -62,7 +59,7 @@ export class NotificationsClientController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark all notifications as read' })
   @ApiResponse({ status: 200, description: 'All notifications marked as read' })
-  async markAllAsRead(@Request() req: { user: { id: string } }) {
+  async markAllAsRead(@Request() req: { user: { id: number } }) {
     await this.notificationsService.markAllAsRead(req.user.id);
     return { success: true };
   }
@@ -72,7 +69,7 @@ export class NotificationsClientController {
   @ApiOperation({ summary: 'Soft delete a notification' })
   @ApiResponse({ status: 204, description: 'Notification deleted' })
   async softDelete(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user: { id: number } },
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     await this.notificationsService.softDelete(id, req.user.id);
@@ -81,7 +78,7 @@ export class NotificationsClientController {
   @Get('preferences')
   @ApiOperation({ summary: 'Get notification preferences' })
   @ApiResponse({ status: 200, description: 'Returns notification preferences' })
-  async getPreferences(@Request() req: { user: { id: string } }) {
+  async getPreferences(@Request() req: { user: { id: number } }) {
     return this.notificationsService.getPreferences(req.user.id);
   }
 
@@ -89,7 +86,7 @@ export class NotificationsClientController {
   @ApiOperation({ summary: 'Update notification preferences' })
   @ApiResponse({ status: 200, description: 'Preferences updated' })
   async updatePreferences(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user: { id: number } },
     @Query() updates: UpdatePreferencesDto,
   ) {
     return this.notificationsService.updatePreferences(req.user.id, updates);

@@ -55,7 +55,7 @@ export class NotificationsService {
   }
 
   async findAllForUser(
-    userId: string,
+    userId: number,
     pagination: PaginationQueryDto,
   ): Promise<{
     data: Notification[];
@@ -83,7 +83,7 @@ export class NotificationsService {
     }
   }
 
-  async countUnread(userId: string): Promise<number> {
+  async countUnread(userId: number): Promise<number> {
     try {
       return await this.notificationRepository.count({
         where: { userId, isRead: false, isDeleted: false },
@@ -98,7 +98,7 @@ export class NotificationsService {
     }
   }
 
-  async markAsRead(id: string, userId: string): Promise<Notification> {
+  async markAsRead(id: string, userId: number): Promise<Notification> {
     try {
       const notification = await this.notificationRepository.findOne({
         where: { id, isDeleted: false },
@@ -139,7 +139,7 @@ export class NotificationsService {
     }
   }
 
-  async markAllAsRead(userId: string): Promise<void> {
+  async markAllAsRead(userId: number): Promise<void> {
     try {
       await this.notificationRepository.update(
         { userId, isRead: false, isDeleted: false },
@@ -158,7 +158,7 @@ export class NotificationsService {
     }
   }
 
-  async softDelete(id: string, userId: string): Promise<void> {
+  async softDelete(id: string, userId: number): Promise<void> {
     try {
       const notification = await this.notificationRepository.findOne({
         where: { id, isDeleted: false },
@@ -190,7 +190,7 @@ export class NotificationsService {
     }
   }
 
-  async getPreferences(userId: string): Promise<NotificationPreferences> {
+  async getPreferences(userId: number): Promise<NotificationPreferences> {
     try {
       let preferences = await this.preferencesRepository.findOne({
         where: { userId },
@@ -219,7 +219,7 @@ export class NotificationsService {
   }
 
   async updatePreferences(
-    userId: string,
+    userId: number,
     updates: UpdatePreferencesDto,
   ): Promise<NotificationPreferences> {
     try {
@@ -335,7 +335,7 @@ export class NotificationsService {
 
   @OnEvent(NOTIFICATION_EVENTS.ORDER_UPDATED)
   async handleOrderUpdated(payload: {
-    userId: string;
+    userId: number;
     orderId: string;
     status: string;
     title: string;
@@ -352,7 +352,7 @@ export class NotificationsService {
 
   @OnEvent(NOTIFICATION_EVENTS.PAYMENT_SUCCESS)
   async handlePaymentSuccess(payload: {
-    userId: string;
+    userId: number;
     paymentId: string;
     amount: number;
     title: string;
@@ -369,7 +369,7 @@ export class NotificationsService {
 
   @OnEvent(NOTIFICATION_EVENTS.PAYMENT_FAILED)
   async handlePaymentFailed(payload: {
-    userId: string;
+    userId: number;
     paymentId: string;
     amount: number;
     reason: string;

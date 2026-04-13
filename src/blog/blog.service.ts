@@ -8,9 +8,8 @@ import { Repository } from 'typeorm';
 import { Article } from './schema/article.schema';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { FilterArticlesQueryDto } from './dto/filter-articles-query.dto';
 import { generateUniqueSlug } from '../common/utils/slug.util';
+import { GetAllArticlesQueryDto } from './dto/find-all.dto';
 
 @Injectable()
 export class BlogService {
@@ -137,10 +136,7 @@ export class BlogService {
     return { message: 'Article deleted successfully' };
   }
 
-  async findPublished(
-    query: PaginationQueryDto,
-    filters: FilterArticlesQueryDto,
-  ): Promise<{
+  async findPublished(query: GetAllArticlesQueryDto): Promise<{
     data: Partial<Article>[];
     meta: { page: number; limit: number; total: number; totalPages: number };
   }> {
@@ -173,15 +169,15 @@ export class BlogService {
       .skip(skip)
       .take(limit);
 
-    if (filters.categoryId) {
+    if (query.categoryId) {
       qb.andWhere('article.categoryId = :categoryId', {
-        categoryId: filters.categoryId,
+        categoryId: query.categoryId,
       });
     }
 
-    if (filters.tag) {
+    if (query.tag) {
       qb.andWhere(':tag = ANY(article.tags)', {
-        tag: filters.tag.toLowerCase(),
+        tag: query.tag.toLowerCase(),
       });
     }
 
@@ -218,24 +214,42 @@ export class BlogService {
     return article;
   }
 
-  async findAll(query: PaginationQueryDto): Promise<{
-    data: Article[];
-    meta: { page: number; limit: number; total: number; totalPages: number };
-  }> {
+  async findAll(query: GetAllArticlesQueryDto) {
     const page = query.page || 1;
     const limit = query.limit || 10;
-    const skip = (page - 1) * limit;
-    const sortBy = query.sortBy || 'createdAt';
-    const order = query.order || 'DESC';
 
-    const [data, total] = await this.articleRepo.findAndCount({
-      order: { [sortBy]: order },
-      skip,
-      take: limit,
-      relations: ['category'],
-    });
+    const qb = this.articleRepo
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.category', 'category')
+      .orderBy(`article.${query.sortBy || 'createdAt'}`, query.order || 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
 
-    const totalPages = Math.ceil(total / limit);
+    if (query?.categoryId) {
+      qb.andWhere('article.categoryId = :categoryId', {
+        categoryId: query.categoryId,
+      });
+    }
+
+    if (query?.tag) {
+      qb.andWhere(
+        'EXISTS (SELECT 1 FROM unnest(article.tags) tag WHERE LOWER(tag) LIKE LOWER(:tag))',
+        { tag: `%${query.tag}%` },
+      );
+    }
+
+    if (query?.search?.trim()) {
+      qb.andWhere('article.title ILIKE :search', {
+        search: `%${query.search.trim()}%`,
+      });
+    }
+
+    if (query?.isPublished !== undefined) {
+      qb.andWhere('article.isPublished = :isPublished', {
+        isPublished: query.isPublished,
+      });
+    }
+    const [data, total] = await qb.getManyAndCount();
 
     return {
       data,
@@ -243,7 +257,7 @@ export class BlogService {
         page,
         limit,
         total,
-        totalPages,
+        totalPages: Math.ceil(total / limit),
       },
     };
   }

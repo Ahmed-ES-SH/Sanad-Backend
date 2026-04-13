@@ -216,9 +216,6 @@ export class AuthService {
     const payload = { id: user?.id, email: user?.email, role: user?.role };
     const access_token = await this.jwtService.signAsync(payload);
 
-    console.log('Google User Email:', email);
-    console.log('Database Found User ID:', user?.id);
-
     return { access_token, user };
   }
 

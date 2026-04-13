@@ -39,7 +39,7 @@ export const databaseConfig: DataSourceOptions = {
     NotificationPreferences,
   ],
   synchronize: false,
-  logging: true,
+  logging: false,
   migrations: ['dist/db/migrations/*.js'],
 };
 

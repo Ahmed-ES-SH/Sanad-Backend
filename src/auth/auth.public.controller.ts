@@ -96,8 +96,14 @@ export class AuthPublicController {
       avatar: req.user.avatar,
     });
 
-    return res.redirect(
-      `${process.env.FRONTEND_URL}/auth/callback?token=${result.access_token}`,
-    );
+    res.cookie('sanad_auth_token', result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 5 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+
+    return res.redirect(`${process.env.FRONTEND_URL}?refresh=1`);
   }
 }

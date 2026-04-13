@@ -5,6 +5,7 @@ import {
   IsArray,
   MaxLength,
   IsUUID,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -59,4 +60,14 @@ export class CreateProjectDto {
   @IsOptional()
   @ApiPropertyOptional({ description: 'Source code repository URL' })
   repoUrl?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiPropertyOptional({ description: 'Is project published' })
+  isPublished?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiPropertyOptional({ description: 'Is project featured' })
+  isFeatured?: boolean;
 }

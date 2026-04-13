@@ -24,7 +24,7 @@ import {
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ReorderProjectsDto } from './dto/reorder-projects.dto';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { AdminFilterProjectsQueryDto } from './dto/admin-filter-projects-query.dto';
 
 @ApiTags('Portfolio (Admin)')
 @Controller('admin/portfolio')
@@ -38,8 +38,17 @@ export class PortfolioController {
     status: 200,
     description: 'Return paginated list of all projects.',
   })
-  findAll(@Query() query: PaginationQueryDto) {
+  findAll(@Query() query: AdminFilterProjectsQueryDto) {
     return this.portfolioService.findAll(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a single project by ID' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiResponse({ status: 200, description: 'Return a single project.' })
+  @ApiResponse({ status: 404, description: 'Project not found.' })
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.portfolioService.findOne(id);
   }
 
   @Patch('reorder')

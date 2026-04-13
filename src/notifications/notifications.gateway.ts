@@ -83,31 +83,31 @@ export class NotificationsGateway
   }
 
   // Emit to specific user
-  emitToUser(userId: string, payload: unknown): void {
+  emitToUser(userId: number | string, payload: unknown): void {
     this.server.to(`user:${userId}`).emit(WsEvent.NOTIFICATION_NEW, payload);
   }
 
   // Emit read update to specific user
-  emitReadUpdate(userId: string, notificationId: string): void {
+  emitReadUpdate(userId: number, notificationId: string): void {
     this.server.to(`user:${userId}`).emit(WsEvent.NOTIFICATION_READ, {
       notificationId,
     });
   }
 
   // Emit read all update to specific user
-  emitReadAllUpdate(userId: string): void {
+  emitReadAllUpdate(userId: number): void {
     this.server.to(`user:${userId}`).emit(WsEvent.NOTIFICATION_READ_ALL);
   }
 
   // Emit unread count update to specific user
-  emitCountUpdate(userId: string, unreadCount: number): void {
+  emitCountUpdate(userId: number, unreadCount: number): void {
     this.server.to(`user:${userId}`).emit(WsEvent.NOTIFICATION_COUNT, {
       unreadCount,
     });
   }
 
   // Emit delete update to specific user
-  emitDelete(userId: string, notificationId: string): void {
+  emitDelete(userId: number, notificationId: string): void {
     this.server.to(`user:${userId}`).emit(WsEvent.NOTIFICATION_DELETE, {
       notificationId,
     });
@@ -120,10 +120,10 @@ export class NotificationsGateway
 
   // Handle client marking a notification as read
   @SubscribeMessage(WsEvent.NOTIFICATION_READ)
-  async handleMarkRead(
+  handleMarkRead(
     @ConnectedSocket() client: TypedWsSocket,
     @MessageBody() payload: { notificationId: string },
-  ): Promise<void> {
+  ): void {
     // This is handled by the REST API, but we can add WebSocket support here if needed
     console.log(
       `User ${client.data.userId} marked notification ${payload.notificationId} as read via WebSocket`,
@@ -132,9 +132,7 @@ export class NotificationsGateway
 
   // Handle client marking all notifications as read
   @SubscribeMessage(WsEvent.NOTIFICATION_READ_ALL)
-  async handleMarkAllRead(
-    @ConnectedSocket() client: TypedWsSocket,
-  ): Promise<void> {
+  handleMarkAllRead(@ConnectedSocket() client: TypedWsSocket): void {
     // This is handled by the REST API, but we can add WebSocket support here if needed
     console.log(
       `User ${client.data.userId} marked all notifications as read via WebSocket`,
